@@ -1,0 +1,215 @@
+// 統一核心型別 — 匹配 Prisma schema + 前後台共用
+
+export type ApiResponse<T> =
+  | { data: T; error: null }
+  | { data: null; error: { code: string; message: string } }
+
+// --- Category ---
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  parentId: string | null
+  parent?: Pick<Category, 'id' | 'name' | 'slug'> | null
+  children?: Category[]
+  _count?: { products: number }
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Inventory ---
+export interface Inventory {
+  id: string
+  productId: string
+  sku: string
+  quantity: number
+  lowStockThreshold: number
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Product ---
+export interface Product {
+  id: string
+  name: string
+  slug: string | null
+  description: string | null
+  price: number           // 台幣，整數
+  originalPrice?: number  // 原價（顯示用）
+  status: 'active' | 'inactive'
+  categoryId: string
+  category?: Pick<Category, 'id' | 'name' | 'slug'>
+  inventory?: Pick<Inventory, 'sku' | 'quantity' | 'lowStockThreshold'>
+  images?: string[]       // 商品圖片 URL 陣列
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Customer ---
+export interface Customer {
+  id: string
+  name: string
+  email: string
+  phone: string | null
+  address: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// --- OrderItem ---
+export interface OrderItem {
+  id: string
+  orderId: string
+  productId: string
+  product?: Pick<Product, 'id' | 'name' | 'slug'>
+  quantity: number
+  priceAtOrder: number    // 下單當下價格快照（Prisma schema 欄位名）
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Order ---
+export type OrderStatus =
+  | 'pending_payment'
+  | 'pending_confirm'
+  | 'pending_ship'
+  | 'shipped'
+  | 'completed'
+  | 'cancelled'
+  | 'refund_pending'
+  | 'refunded'
+
+export type PaymentMethod = 'bank_transfer' | 'seller_ship'
+export type PaymentStatus = 'pending' | 'paid' | 'failed'
+
+export interface Order {
+  id: string
+  customerId: string
+  customer?: Customer
+  status: OrderStatus
+  paymentMethod: PaymentMethod
+  paymentStatus: PaymentStatus
+  totalAmount: number     // 台幣，整數
+  note: string | null
+  items?: OrderItem[]
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Promotion ---
+export type PromotionChannel = 'LINE' | 'FB'
+export type PromotionStatus = 'draft' | 'scheduled' | 'sent' | 'failed'
+
+export interface Promotion {
+  id: string
+  channel: PromotionChannel
+  platform: string        // 'line' | 'facebook' | 'both'
+  productIds: string[]
+  message: string
+  utmUrl: string | null
+  status: PromotionStatus
+  scheduledAt: string | null
+  sentAt: string | null
+  metadata: Record<string, unknown> | null
+  createdAt: string
+  updatedAt: string
+}
+
+// ===== Admin 擴充型別 =====
+
+// 後台 OrderItem（含訂單快照欄位）
+export interface AdminOrderItem {
+  productId: string
+  productName: string    // 下單時商品名稱快照
+  sku: string            // 下單時 SKU 快照
+  quantity: number
+  priceAtOrder: number   // 下單當下價格快照
+  image?: string
+}
+
+// 後台 Order（含展開的顧客資訊與訂單編號）
+export interface AdminOrder {
+  id: string
+  orderNo: string          // 訂單編號，如 ORD-20260318-001
+  customerId: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  shippingAddress: string
+  trackingNo?: string
+  items: AdminOrderItem[]
+  totalAmount: number
+  paymentMethod: PaymentMethod
+  paymentStatus: PaymentStatus
+  status: OrderStatus
+  note?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// 會員（Customer 的後台擴充）
+export interface Member {
+  id: string
+  name: string
+  email: string
+  phone: string
+  totalOrders: number
+  totalSpent: number
+  createdAt: string
+  status: 'active' | 'inactive'
+}
+
+export interface Discount {
+  id: string
+  name: string
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  minAmount?: number
+  usageLimit?: number
+  usedCount: number
+  startDate: string
+  endDate: string
+  status: 'active' | 'inactive' | 'expired'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RefundRequest {
+  id: string
+  orderId: string
+  orderNo: string
+  customerName: string
+  amount: number
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'completed'
+  items: AdminOrderItem[]
+  note?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Banner {
+  id: string
+  title: string
+  imageUrl: string
+  linkUrl?: string
+  sort: number
+  status: 'active' | 'inactive'
+  startDate?: string
+  endDate?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Notification {
+  id: string
+  title: string
+  content: string
+  type: 'promotion' | 'order' | 'system'
+  targetAudience: 'all' | 'members'
+  status: 'draft' | 'sent' | 'scheduled'
+  sentAt?: string
+  scheduledAt?: string
+  createdAt: string
+}
