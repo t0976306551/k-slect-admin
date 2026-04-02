@@ -43,7 +43,12 @@ const navItems: NavItem[] = [
   { label: '系統設定', href: '/settings', icon: Settings },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
 
   const isActive = (href: string) => {
@@ -52,9 +57,24 @@ export default function Sidebar() {
   }
 
   return (
+    <>
+      {/* Mobile 遮罩（md 以上隱藏） */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 md:hidden"
+          style={{ background: 'rgba(0,0,0,0.4)', zIndex: 45 }}
+          onClick={onClose}
+        />
+      )}
+
     <aside
-      className="fixed top-0 left-0 h-full w-[240px] bg-white flex flex-col"
-      style={{ borderRight: '1px solid #F0EFEC', zIndex: 40 }}
+      className={[
+        'fixed top-0 left-0 h-full w-[240px] bg-white flex flex-col',
+        'transition-transform duration-300 ease-in-out',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+        'md:translate-x-0',
+      ].join(' ')}
+      style={{ borderRight: '1px solid #F0EFEC', zIndex: 50 }}
     >
       {/* Logo */}
       <div className="flex flex-col gap-[2px] px-5 pt-6 pb-4">
@@ -149,5 +169,6 @@ export default function Sidebar() {
         </p>
       </div>
     </aside>
+    </>
   )
 }

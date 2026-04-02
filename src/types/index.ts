@@ -28,6 +28,31 @@ export interface Inventory {
   updatedAt: string
 }
 
+// --- ProductOption / ProductVariant ---
+export interface ProductOptionValue {
+  id: string
+  value: string
+  position: number
+}
+
+export interface ProductOption {
+  id: string
+  name: string
+  position: number
+  values: ProductOptionValue[]
+}
+
+export interface ProductVariant {
+  id: string
+  sku: string
+  price: number | null
+  quantity: number
+  lowStockThreshold: number
+  status: 'active' | 'inactive'
+  image: string | null
+  variantOptions?: Array<{ optionValue: ProductOptionValue }>
+}
+
 // --- Product ---
 export interface Product {
   id: string
@@ -41,8 +66,36 @@ export interface Product {
   category?: Pick<Category, 'id' | 'name' | 'slug'>
   inventory?: Pick<Inventory, 'sku' | 'quantity' | 'lowStockThreshold'>
   images?: string[]       // 商品圖片 URL 陣列
+  options?: ProductOption[]
+  variants?: ProductVariant[]
   createdAt: string
   updatedAt: string
+}
+
+// --- Variant Draft（後台 UI 用）---
+export interface ProductOptionValueDraft {
+  id: string
+  value: string
+  position: number
+}
+
+export interface ProductOptionDraft {
+  id: string
+  name: string
+  position: number
+  values: ProductOptionValueDraft[]
+}
+
+export interface ProductVariantRow {
+  id?: string
+  sku: string
+  price: number | null
+  quantity: number
+  lowStockThreshold: number
+  status: 'active' | 'inactive'
+  image: string | null
+  optionValueIds: string[]
+  label: string  // 如 "紅色 / M"
 }
 
 // --- Customer ---
@@ -70,8 +123,6 @@ export interface OrderItem {
 
 // --- Order ---
 export type OrderStatus =
-  | 'pending_payment'
-  | 'pending_confirm'
   | 'pending_ship'
   | 'shipped'
   | 'completed'
@@ -79,7 +130,7 @@ export type OrderStatus =
   | 'refund_pending'
   | 'refunded'
 
-export type PaymentMethod = 'bank_transfer' | 'seller_ship'
+export type PaymentMethod = 'seller_ship'
 export type PaymentStatus = 'pending' | 'paid' | 'failed'
 
 export interface Order {
@@ -137,6 +188,9 @@ export interface AdminOrder {
   customerPhone: string
   shippingAddress: string
   trackingNo?: string
+  cvsBrand?: '711'                // 賣貨便超商品牌（固定 7-11）
+  cvsStoreCode?: string   // 超商門市代碼
+  cvsPickupCode?: string  // 取件代碼（便利購 API 回傳）
   items: AdminOrderItem[]
   totalAmount: number
   paymentMethod: PaymentMethod

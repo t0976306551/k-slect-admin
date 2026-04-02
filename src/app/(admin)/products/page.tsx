@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ChevronDown, Plus, Pencil } from 'lucide-react'
-import { fetchProducts } from '@/lib/api'
+import { Search, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react'
+import { fetchProducts, deleteProduct } from '@/lib/api'
 import type { Product } from '@/types'
 
 function StatusBadge({ status }: { status: Product['status'] }) {
@@ -32,10 +32,23 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('全部分類')
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchProducts().then(r => { if (r.data) setProducts(r.data) })
   }, [])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    const res = await deleteProduct(deleteTarget.id)
+    setDeleting(false)
+    if (!res.error) {
+      setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+    }
+    setDeleteTarget(null)
+  }
 
   const categories = ['全部分類', '美妝保養', '食品零食', '服飾配件', '生活家居']
 
@@ -129,7 +142,7 @@ export default function ProductsPage() {
           <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>價格</span>
           <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>庫存</span>
           <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
-          <span className="w-8" />
+          <span className="w-16" />
         </div>
 
         {/* 商品列 */}
@@ -164,7 +177,9 @@ export default function ProductsPage() {
                   className="text-[10px]"
                   style={{ fontFamily: 'var(--font-space-mono)', color: '#8E8E93' }}
                 >
-                  {product.inventory?.sku ?? '—'}
+                  {product.variants?.length
+                    ? `${product.variants.length} 種型號`
+                    : (product.inventory?.sku ?? '—')}
                 </span>
               </div>
             </div>
@@ -186,26 +201,48 @@ export default function ProductsPage() {
             </span>
 
             {/* 庫存 */}
-            <span
-              className="w-[80px] text-[12px]"
-              style={{
-                fontFamily: 'var(--font-jakarta)',
-                color: (product.inventory?.quantity ?? 0) <= 5 ? '#D4845E' : '#2D2D2D',
-                fontWeight: (product.inventory?.quantity ?? 0) <= 5 ? 600 : 400,
-              }}
-            >
-              {product.inventory?.quantity ?? 0}
-            </span>
+            {(() => {
+              const hasVariants = (product.variants?.length ?? 0) > 0
+              const totalQty = hasVariants
+                ? product.variants!.reduce((sum, v) => sum + v.quantity, 0)
+                : (product.inventory?.quantity ?? 0)
+              const isLow = hasVariants
+                ? product.variants!.some(v => v.quantity <= v.lowStockThreshold)
+                : totalQty <= 5
+              return (
+                <span
+                  className="w-[80px] text-[12px]"
+                  style={{
+                    fontFamily: 'var(--font-jakarta)',
+                    color: isLow ? '#D4845E' : '#2D2D2D',
+                    fontWeight: isLow ? 600 : 400,
+                  }}
+                >
+                  {totalQty}
+                </span>
+              )
+            })()}
 
             {/* 狀態 */}
             <div className="flex-1">
               <StatusBadge status={product.status} />
             </div>
 
-            {/* 編輯 */}
-            <button className="w-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
-              <Pencil size={16} color="#8E8E93" />
-            </button>
+            {/* 操作按鈕 */}
+            <div className="flex items-center gap-1">
+              <Link
+                href={`/products/${product.id}/edit`}
+                className="w-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <Pencil size={16} color="#8E8E93" />
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(product)}
+                className="w-8 flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <Trash2 size={16} color="#D4845E" />
+              </button>
+            </div>
           </div>
         ))}
 
@@ -220,6 +257,51 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* 刪除確認 Modal */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.3)' }}
+        >
+          <div
+            className="flex flex-col gap-5 p-6 w-[360px]"
+            style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
+          >
+            <div className="flex flex-col gap-2">
+              <p
+                className="text-[16px] font-semibold"
+                style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
+              >
+                確認刪除商品
+              </p>
+              <p
+                className="text-[13px]"
+                style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}
+              >
+                確定要刪除「{deleteTarget.name}」嗎？此操作無法復原。
+              </p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-5 py-[10px] text-[13px] font-medium rounded-[10px] transition-colors hover:bg-gray-50"
+                style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+                style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
+              >
+                {deleting ? '刪除中...' : '確認刪除'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

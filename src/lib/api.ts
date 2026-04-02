@@ -1,11 +1,14 @@
 import type { ApiResponse, Product, AdminOrder, Category, Inventory, Promotion, Member, Discount, RefundRequest, Banner, Notification } from '../types'
 import {
+  mockCreateProduct,
   mockFetchProducts,
   mockFetchProduct,
   mockFetchCategories,
   mockFetchOrders,
   mockFetchOrder,
   mockUpdateOrder,
+  mockUpdateProduct,
+  mockDeleteProduct,
   mockFetchMembers,
   mockFetchDiscounts,
   mockFetchRefunds,
@@ -59,7 +62,22 @@ export async function createProduct(data: {
   categoryId: string
   status?: 'active' | 'inactive'
   inventory?: { sku: string; quantity: number; lowStockThreshold?: number }
+  options?: Array<{
+    name: string
+    position: number
+    values: Array<{ value: string; position: number }>
+  }>
+  variants?: Array<{
+    sku: string
+    price?: number | null
+    quantity: number
+    lowStockThreshold: number
+    status: 'active' | 'inactive'
+    image?: string | null
+    optionValues: string[]
+  }>
 }): Promise<ApiResponse<Product>> {
+  if (USE_MOCK) return mockCreateProduct(data)
   return request('/products', { method: 'POST', body: JSON.stringify(data) })
 }
 
@@ -67,16 +85,20 @@ export async function updateProduct(
   id: string,
   data: Partial<{
     name: string
-    description: string
+    description: string | null
     price: number
+    originalPrice: number | null
     categoryId: string
     status: 'active' | 'inactive'
+    inventory: { sku?: string; quantity?: number }
   }>,
 ): Promise<ApiResponse<Product>> {
+  if (USE_MOCK) return mockUpdateProduct(id, data)
   return request(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 }
 
 export async function deleteProduct(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  if (USE_MOCK) return mockDeleteProduct(id)
   return request(`/products/${id}`, { method: 'DELETE' })
 }
 
@@ -108,7 +130,10 @@ export async function fetchOrder(id: string): Promise<ApiResponse<AdminOrder>> {
 
 export async function updateOrder(
   id: string,
-  data: { status?: string; trackingNo?: string },
+  data: {
+    status?: string
+    paymentStatus?: string
+  },
 ): Promise<ApiResponse<AdminOrder>> {
   if (USE_MOCK) return mockUpdateOrder(id, data)
   return request(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) })

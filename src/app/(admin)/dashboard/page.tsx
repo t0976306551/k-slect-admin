@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {/* 今日訂單 */}
         <div
           className="flex flex-col gap-2 p-5"
@@ -143,30 +143,6 @@ export default async function DashboardPage() {
           </span>
         </div>
 
-        {/* 待確認匯款 */}
-        <div
-          className="flex flex-col gap-2 p-5"
-          style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
-        >
-          <span
-            className="text-[12px] font-medium"
-            style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}
-          >
-            待確認匯款
-          </span>
-          <span
-            className="text-[32px] font-medium tracking-[-1px]"
-            style={{ fontFamily: 'var(--font-fraunces)', color: '#5B9BD5' }}
-          >
-            {stats.pendingConfirm}
-          </span>
-          <span
-            className="text-[11px]"
-            style={{ fontFamily: 'var(--font-space-mono)', color: '#8E8E93' }}
-          >
-            等待對帳
-          </span>
-        </div>
       </div>
 
       {/* 最近訂單 */}

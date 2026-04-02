@@ -1,12 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ChevronDown, Upload, ToggleLeft, ToggleRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { ChevronDown, Upload } from 'lucide-react'
 import { mockCategories } from '@/lib/mock-data'
-import { createProduct } from '@/lib/api'
-import { VariantBuilder } from '@/components/admin/VariantBuilder'
-import type { ProductOptionDraft, ProductVariantRow } from '@/types'
+import { fetchProduct, updateProduct } from '@/lib/api'
 
 function FormGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -36,8 +34,11 @@ const inputStyle = {
   width: '100%',
 }
 
-export default function NewProductPage() {
+export default function EditProductPage() {
   const router = useRouter()
+  const params = useParams<{ id: string }>()
+  const id = params.id
+
   const [name, setName] = useState('')
   const [sku, setSku] = useState('')
   const [price, setPrice] = useState('')
@@ -46,12 +47,9 @@ export default function NewProductPage() {
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
-
-  // 型號相關
   const [hasVariants, setHasVariants] = useState(false)
-  const [options, setOptions] = useState<ProductOptionDraft[]>([])
-  const [variants, setVariants] = useState<ProductVariantRow[]>([])
 
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -60,63 +58,54 @@ export default function NewProductPage() {
     ...mockCategories.flatMap(c => c.children ?? []),
   ]
 
+  useEffect(() => {
+    fetchProduct(id).then(r => {
+      if (r.error || !r.data) {
+        setError('商品不存在')
+        setLoading(false)
+        return
+      }
+      const p = r.data
+      setName(p.name)
+      setPrice(String(p.price))
+      setOriginalPrice(p.originalPrice != null ? String(p.originalPrice) : '')
+      setCategoryId(p.categoryId ?? '')
+      setDescription(p.description ?? '')
+      setStatus(p.status)
+      setHasVariants((p.variants?.length ?? 0) > 0)
+      if (p.inventory) {
+        setSku(p.inventory.sku)
+        setStock(String(p.inventory.quantity))
+      }
+      setLoading(false)
+    })
+  }, [id])
+
   const handleSubmit = async () => {
     if (!name.trim()) { setError('請輸入商品名稱'); return }
     if (!price || Number(price) <= 0) { setError('請輸入有效售價'); return }
     if (!categoryId) { setError('請選擇商品分類'); return }
 
-    if (hasVariants) {
-      if (variants.length === 0) { setError('請先產生型號組合'); return }
-      const missingSku = variants.some(v => !v.sku.trim())
-      if (missingSku) { setError('請填寫所有型號的 SKU'); return }
-    } else {
-      if (!sku.trim()) { setError('請輸入 SKU'); return }
-    }
-
     setError(null)
     setSaving(true)
 
     try {
-      const payload = hasVariants
-        ? {
-            name: name.trim(),
-            description: description.trim() || undefined,
-            price: Number(price),
-            categoryId,
-            status,
-            options: options.filter(o => o.name.trim() && o.values.length > 0).map((o, i) => ({
-              ...o,
-              position: i,
-            })),
-            variants: variants.map(v => ({
-              sku: v.sku.trim(),
-              price: v.price,
-              quantity: v.quantity,
-              lowStockThreshold: v.lowStockThreshold,
-              status: v.status,
-              image: v.image,
-              // 用 label 中的值字串對應 option values
-              optionValues: options
-                .filter(o => o.name.trim() && o.values.length > 0)
-                .flatMap(o =>
-                  o.values.filter(val => v.optionValueIds.includes(val.id)).map(val => val.value),
-                ),
-            })),
-          }
-        : {
-            name: name.trim(),
-            description: description.trim() || undefined,
-            price: Number(price),
-            categoryId,
-            status,
-            inventory: {
-              sku: sku.trim(),
-              quantity: Number(stock) || 0,
-              lowStockThreshold: 5,
-            },
-          }
+      const payload: Parameters<typeof updateProduct>[1] = {
+        name: name.trim(),
+        description: description.trim() || null,
+        price: Number(price),
+        originalPrice: originalPrice ? Number(originalPrice) : null,
+        categoryId,
+        status,
+      }
+      if (!hasVariants) {
+        payload.inventory = {
+          sku: sku.trim(),
+          quantity: Number(stock) || 0,
+        }
+      }
 
-      const res = await createProduct(payload)
+      const res = await updateProduct(id, payload)
       if (res.error) {
         setError(res.error.message)
         return
@@ -127,16 +116,14 @@ export default function NewProductPage() {
     }
   }
 
-  const toggleVariants = () => {
-    setHasVariants(v => !v)
-    // 切換時清除另一模式的資料
-    if (!hasVariants) {
-      setSku('')
-      setStock('')
-    } else {
-      setOptions([])
-      setVariants([])
-    }
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <span style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93', fontSize: 14 }}>
+          載入中...
+        </span>
+      </div>
+    )
   }
 
   return (
@@ -147,7 +134,7 @@ export default function NewProductPage() {
           className="text-[28px] font-medium tracking-[-0.5px]"
           style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
         >
-          新增商品
+          編輯商品
         </h1>
         <div className="flex items-center gap-3">
           <button
@@ -282,50 +269,15 @@ export default function NewProductPage() {
             />
           </FormGroup>
 
-          {/* 型號區塊 */}
-          <div
-            className="flex flex-col gap-4 pt-4"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p
-                  className="text-[14px] font-semibold"
-                  style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
-                >
-                  商品型號
-                </p>
-                <p
-                  className="text-[12px] mt-0.5"
-                  style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}
-                >
-                  啟用後可設定顏色、尺寸等規格，每個規格獨立管理庫存
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={toggleVariants}
-                className="flex items-center gap-1.5 text-[13px] font-medium transition-opacity hover:opacity-70"
-                style={{ fontFamily: 'var(--font-jakarta)', color: hasVariants ? '#7C9070' : '#8E8E93' }}
-              >
-                {hasVariants ? (
-                  <ToggleRight size={28} strokeWidth={1.5} />
-                ) : (
-                  <ToggleLeft size={28} strokeWidth={1.5} />
-                )}
-                {hasVariants ? '已啟用' : '未啟用'}
-              </button>
+          {/* 型號商品唯讀提示 */}
+          {hasVariants && (
+            <div
+              className="px-4 py-3 text-[13px] rounded-[10px]"
+              style={{ background: '#F7F6F3', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)', border: '1px solid #F0EFEC' }}
+            >
+              此商品含有型號規格，型號資訊請透過型號管理調整。
             </div>
-
-            {hasVariants && (
-              <VariantBuilder
-                options={options}
-                variants={variants}
-                onOptionsChange={setOptions}
-                onVariantsChange={setVariants}
-              />
-            )}
-          </div>
+          )}
         </div>
 
         {/* 右側欄 */}
