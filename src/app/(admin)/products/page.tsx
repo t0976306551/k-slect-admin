@@ -61,7 +61,7 @@ export default function ProductsPage() {
   return (
     <div className="p-8 flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
           style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -86,7 +86,7 @@ export default function ProductsPage() {
       </div>
 
       {/* 搜尋列 */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
         <div
           className="flex items-center gap-2 px-[14px] flex-1"
           style={{
@@ -128,9 +128,10 @@ export default function ProductsPage() {
       </div>
 
       {/* 商品表格 */}
+      <div className="overflow-x-auto rounded-[16px]" style={{ border: '1px solid #F0EFEC' }}>
       <div
-        className="flex flex-col w-full overflow-hidden"
-        style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
+        className="flex flex-col min-w-[600px]"
+        style={{ background: '#FFFFFF' }}
       >
         {/* 表頭 */}
         <div
@@ -257,6 +258,7 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* 刪除確認 Modal */}
       {deleteTarget && (
@@ -265,7 +267,7 @@ export default function ProductsPage() {
           style={{ background: 'rgba(0,0,0,0.3)' }}
         >
           <div
-            className="flex flex-col gap-5 p-6 w-[360px]"
+            className="flex flex-col gap-5 p-6 w-[90vw] max-w-[360px]"
             style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
           >
             <div className="flex flex-col gap-2">

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
+import { createDiscount } from '@/lib/api'
 
 const inputStyle = {
   background: '#F7F6F3',
@@ -28,6 +29,28 @@ export default function NewDiscountPage() {
   const [usageLimit, setUsageLimit] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!name || !code || !value || !startDate || !endDate) return
+    setLoading(true)
+    try {
+      const res = await createDiscount({
+        name,
+        code,
+        type,
+        value: Number(value),
+        minAmount: minAmount ? Number(minAmount) : undefined,
+        usageLimit: usageLimit ? Number(usageLimit) : undefined,
+        startDate,
+        endDate,
+      })
+      if (res.error) return
+      router.push('/discounts')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="p-8 flex flex-col gap-6">
@@ -47,10 +70,12 @@ export default function NewDiscountPage() {
             取消
           </button>
           <button
-            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80"
+            onClick={handleSubmit}
+            disabled={loading || !name || !code || !value || !startDate || !endDate}
+            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
           >
-            建立活動
+            {loading ? '建立中…' : '建立活動'}
           </button>
         </div>
       </div>

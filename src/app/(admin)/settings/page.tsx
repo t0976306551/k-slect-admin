@@ -1,6 +1,6 @@
 export default function SettingsPage() {
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 sm:p-8 flex flex-col gap-6">
       <h1
         className="text-[28px] font-medium tracking-[-0.5px]"
         style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -8,7 +8,7 @@ export default function SettingsPage() {
         系統設定
       </h1>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 商店資訊 */}
         <div
           className="flex flex-col gap-4 p-6"
@@ -36,7 +36,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   defaultValue={field.value}
-                  className="outline-none text-[13px] px-3"
+                  className="w-full outline-none text-[13px] px-3"
                   style={{
                     background: '#F7F6F3',
                     borderRadius: 8,
@@ -83,7 +83,7 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type={field.type}
-                  className="outline-none text-[13px] px-3"
+                  className="w-full outline-none text-[13px] px-3"
                   style={{
                     background: '#F7F6F3',
                     borderRadius: 8,

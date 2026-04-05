@@ -41,8 +41,8 @@ function ShipOrderModal({
     <>
       <div className="fixed inset-0 bg-black/40" style={{ zIndex: 60 }} onClick={onClose} />
       <div
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5"
-        style={{ width: 440, background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5 w-[90vw] max-w-[440px]"
+        style={{ background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-[16px] font-medium" style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}>
@@ -110,7 +110,7 @@ export default function ShippingPage() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 sm:p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -121,7 +121,7 @@ export default function ShippingPage() {
       </div>
 
       {/* 統計 */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div
           className="flex items-center gap-4 p-5"
           style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
@@ -187,39 +187,43 @@ export default function ShippingPage() {
             待出貨訂單
           </span>
         </div>
-        <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
-          <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>取貨門市</span>
-          <span className="w-[90px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
-        </div>
-        {pending.map(order => (
-          <div
-            key={order.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <span className="w-[160px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}>{order.orderNo}</span>
-            <span className="w-[100px] text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{order.customerName}</span>
-            <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#6B6B6B' }}>{order.cvsStoreCode ?? '—'}</span>
-            <span className="w-[90px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {order.totalAmount.toLocaleString()}</span>
-            <div className="w-[100px]">
-              <button
-                className="px-3 py-[6px] text-[11px] font-semibold rounded-[8px] hover:opacity-80 transition-opacity"
-                style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
-                onClick={() => setShipOrderTarget(order)}
-              >
-                安排出貨
-              </button>
+        <div className="overflow-x-auto">
+          <div className="min-w-[560px]">
+            <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
+              <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
+              <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
+              <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>取貨門市</span>
+              <span className="w-[90px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
+              <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
             </div>
+            {pending.map(order => (
+              <div
+                key={order.id}
+                className="flex items-center px-5 py-3"
+                style={{ borderTop: '1px solid #F0EFEC' }}
+              >
+                <span className="w-[160px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}>{order.orderNo}</span>
+                <span className="w-[100px] text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{order.customerName}</span>
+                <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#6B6B6B' }}>{order.cvsStoreCode ?? '—'}</span>
+                <span className="w-[90px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {order.totalAmount.toLocaleString()}</span>
+                <div className="w-[100px]">
+                  <button
+                    className="px-3 py-[6px] text-[11px] font-semibold rounded-[8px] hover:opacity-80 transition-opacity"
+                    style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
+                    onClick={() => setShipOrderTarget(order)}
+                  >
+                    安排出貨
+                  </button>
+                </div>
+              </div>
+            ))}
+            {pending.length === 0 && (
+              <div className="flex items-center justify-center py-10">
+                <span className="text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>目前沒有待出貨訂單</span>
+              </div>
+            )}
           </div>
-        ))}
-        {pending.length === 0 && (
-          <div className="flex items-center justify-center py-10">
-            <span className="text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>目前沒有待出貨訂單</span>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* 已出貨列表 */}
@@ -235,38 +239,42 @@ export default function ShippingPage() {
             已出貨訂單
           </span>
         </div>
-        <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
-          <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>取件代碼</span>
-          <span className="w-[90px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
-          <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
-        </div>
-        {shipped.map(order => (
-          <div
-            key={order.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <span className="w-[160px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}>{order.orderNo}</span>
-            <span className="w-[100px] text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{order.customerName}</span>
-            <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#7C9070' }}>{order.cvsPickupCode ?? '—'}</span>
-            <span className="w-[90px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {order.totalAmount.toLocaleString()}</span>
-            <div className="w-[80px]">
-              <button
-                className="px-3 py-[6px] text-[11px] font-medium rounded-[8px] hover:bg-gray-50 transition-colors"
-                style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
-              >
-                查看
-              </button>
+        <div className="overflow-x-auto">
+          <div className="min-w-[540px]">
+            <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
+              <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
+              <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
+              <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>取件代碼</span>
+              <span className="w-[90px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
+              <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
             </div>
+            {shipped.map(order => (
+              <div
+                key={order.id}
+                className="flex items-center px-5 py-3"
+                style={{ borderTop: '1px solid #F0EFEC' }}
+              >
+                <span className="w-[160px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}>{order.orderNo}</span>
+                <span className="w-[100px] text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{order.customerName}</span>
+                <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#7C9070' }}>{order.cvsPickupCode ?? '—'}</span>
+                <span className="w-[90px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {order.totalAmount.toLocaleString()}</span>
+                <div className="w-[80px]">
+                  <button
+                    className="px-3 py-[6px] text-[11px] font-medium rounded-[8px] hover:bg-gray-50 transition-colors"
+                    style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
+                  >
+                    查看
+                  </button>
+                </div>
+              </div>
+            ))}
+            {shipped.length === 0 && (
+              <div className="flex items-center justify-center py-10">
+                <span className="text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>目前沒有已出貨訂單</span>
+              </div>
+            )}
           </div>
-        ))}
-        {shipped.length === 0 && (
-          <div className="flex items-center justify-center py-10">
-            <span className="text-[13px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>目前沒有已出貨訂單</span>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Ship Order Modal */}

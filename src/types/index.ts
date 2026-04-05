@@ -1,4 +1,4 @@
-// 統一核心型別 — 匹配 Prisma schema + 前後台共用
+// 統一核心型別 — 匹配 TypeORM entities（k-slect-backend Express 後端）
 
 export type ApiResponse<T> =
   | { data: T; error: null }
@@ -29,17 +29,24 @@ export interface Inventory {
 }
 
 // --- ProductOption / ProductVariant ---
+// TypeORM 直接回傳 option value 物件（ManyToMany 無中介 model）
 export interface ProductOptionValue {
   id: string
+  optionId: string
   value: string
   position: number
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProductOption {
   id: string
+  productId: string
   name: string
   position: number
   values: ProductOptionValue[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProductVariant {
@@ -50,7 +57,10 @@ export interface ProductVariant {
   lowStockThreshold: number
   status: 'active' | 'inactive'
   image: string | null
-  variantOptions?: Array<{ optionValue: ProductOptionValue }>
+  // TypeORM ManyToMany 直接回傳陣列，非 Prisma join model
+  optionValues?: ProductOptionValue[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 // --- Product ---
@@ -60,12 +70,14 @@ export interface Product {
   slug: string | null
   description: string | null
   price: number           // 台幣，整數
-  originalPrice?: number  // 原價（顯示用）
+  originalPrice: number | null
   status: 'active' | 'inactive'
   categoryId: string
+  externalUrl: string | null
+  origin: string | null
   category?: Pick<Category, 'id' | 'name' | 'slug'>
   inventory?: Pick<Inventory, 'sku' | 'quantity' | 'lowStockThreshold'>
-  images?: string[]       // 商品圖片 URL 陣列
+  images: string[] // 商品圖片 URL 陣列
   options?: ProductOption[]
   variants?: ProductVariant[]
   createdAt: string
@@ -105,18 +117,21 @@ export interface Customer {
   email: string
   phone: string | null
   address: string | null
+  status: 'active' | 'inactive'
   createdAt: string
   updatedAt: string
 }
 
-// --- OrderItem ---
+// --- OrderItem（TypeORM entity 結構：快照欄位）---
 export interface OrderItem {
   id: string
   orderId: string
-  productId: string
-  product?: Pick<Product, 'id' | 'name' | 'slug'>
+  productId: string | null
+  productName: string    // 下單時商品名稱快照
+  sku: string            // 下單時 SKU 快照
   quantity: number
-  priceAtOrder: number    // 下單當下價格快照（Prisma schema 欄位名）
+  priceAtOrder: number   // 下單當下價格快照
+  image: string | null
   createdAt: string
   updatedAt: string
 }
@@ -130,7 +145,7 @@ export type OrderStatus =
   | 'refund_pending'
   | 'refunded'
 
-export type PaymentMethod = 'seller_ship'
+export type PaymentMethod = 'seller_ship' | 'bank_transfer'
 export type PaymentStatus = 'pending' | 'paid' | 'failed'
 
 export interface Order {
@@ -154,8 +169,9 @@ export type PromotionStatus = 'draft' | 'scheduled' | 'sent' | 'failed'
 export interface Promotion {
   id: string
   channel: PromotionChannel
-  platform: string        // 'line' | 'facebook' | 'both'
-  productIds: string[]
+  platform: string
+  // TypeORM ManyToMany 回傳 relation
+  products: Pick<Product, 'id' | 'name'>[]
   message: string
   utmUrl: string | null
   status: PromotionStatus
@@ -168,7 +184,7 @@ export interface Promotion {
 
 // ===== Admin 擴充型別 =====
 
-// 後台 OrderItem（含訂單快照欄位）
+// 後台 OrderItem 快照（RefundRequest 等 jsonb 欄位用）
 export interface AdminOrderItem {
   productId: string
   productName: string    // 下單時商品名稱快照
@@ -188,7 +204,7 @@ export interface AdminOrder {
   customerPhone: string
   shippingAddress: string
   trackingNo?: string
-  cvsBrand?: '711'                // 賣貨便超商品牌（固定 7-11）
+  cvsBrand?: string       // 超商品牌（如 7-11）
   cvsStoreCode?: string   // 超商門市代碼
   cvsPickupCode?: string  // 取件代碼（便利購 API 回傳）
   items: AdminOrderItem[]
@@ -201,12 +217,12 @@ export interface AdminOrder {
   updatedAt: string
 }
 
-// 會員（Customer 的後台擴充）
+// 會員（Customer 的後台統計擴充）
 export interface Member {
   id: string
   name: string
   email: string
-  phone: string
+  phone: string | null
   totalOrders: number
   totalSpent: number
   createdAt: string
@@ -267,3 +283,30 @@ export interface Notification {
   scheduledAt?: string
   createdAt: string
 }
+
+// --- Permission ---
+export interface Permission {
+  id: string
+  slug: string
+  resource: string
+  action: string
+  description: string | null
+  createdAt: string
+}
+
+// --- Role ---
+export interface Role {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  isActive: boolean
+  isSystemRole: boolean
+  permissions: Permission[]
+  createdAt: string
+  updatedAt: string
+}
+
+// --- Setting ---
+// 後端回傳 Record<string, string>（key-value 扁平結構）
+export type Setting = Record<string, string>

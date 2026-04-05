@@ -51,7 +51,7 @@ export default async function DashboardPage() {
   return (
     <div className="p-8 flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
           style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {/* 今日訂單 */}
         <div
           className="flex flex-col gap-2 p-5"
@@ -170,51 +170,54 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* 表頭 */}
-        <div
-          className="flex items-center px-5 py-[10px]"
-          style={{ background: '#FAFAF8' }}
-        >
-          <span className="w-[140px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
-          <span className="w-[120px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>付款</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
-        </div>
-
-        {/* 訂單列 */}
-        {recentOrders.map((order) => (
+        {/* 表格區域（手機可橫向滑動） */}
+        <div className="overflow-x-auto">
+          {/* 表頭 */}
           <div
-            key={order.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
+            className="flex items-center px-5 py-[10px]"
+            style={{ background: '#FAFAF8' }}
           >
-            <span
-              className="w-[140px] text-[12px]"
-              style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}
-            >
-              {order.orderNo}
-            </span>
-            <span
-              className="w-[120px] text-[13px]"
-              style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
-            >
-              {order.customerName}
-            </span>
-            <span
-              className="w-[100px] text-[13px] font-medium"
-              style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
-            >
-              {formatAmount(order.totalAmount)}
-            </span>
-            <span className="w-[100px]">
-              <PaymentBadge method={order.paymentMethod} status={order.paymentStatus} />
-            </span>
-            <span className="flex-1">
-              <StatusBadge status={order.status} />
-            </span>
+            <span className="w-[140px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>訂單編號</span>
+            <span className="w-[120px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>客戶</span>
+            <span className="w-[100px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>金額</span>
+            <span className="w-[100px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>付款</span>
+            <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
           </div>
-        ))}
+
+          {/* 訂單列 */}
+          {recentOrders.map((order) => (
+            <div
+              key={order.id}
+              className="flex items-center px-5 py-3"
+              style={{ borderTop: '1px solid #F0EFEC' }}
+            >
+              <span
+                className="w-[140px] shrink-0 text-[12px]"
+                style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}
+              >
+                {order.orderNo}
+              </span>
+              <span
+                className="w-[120px] shrink-0 text-[13px]"
+                style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
+              >
+                {order.customerName}
+              </span>
+              <span
+                className="w-[100px] shrink-0 text-[13px] font-medium"
+                style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
+              >
+                {formatAmount(order.totalAmount)}
+              </span>
+              <span className="w-[100px] shrink-0">
+                <PaymentBadge method={order.paymentMethod} status={order.paymentStatus} />
+              </span>
+              <span className="flex-1">
+                <StatusBadge status={order.status} />
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

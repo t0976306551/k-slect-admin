@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronRight, FolderOpen, Folder, Plus, Pencil, Trash2 } from 'lucide-react'
-import { fetchCategories } from '@/lib/api'
+import { fetchCategories, createCategory } from '@/lib/api'
 import type { Category } from '@/types'
 
 function CategoryRow({
@@ -125,17 +125,35 @@ function CategoryRow({
   )
 }
 
-function InlineAddRow({ categories, onCancel }: { categories: Category[]; onCancel: () => void }) {
+function InlineAddRow({
+  categories,
+  onCancel,
+  onSave,
+}: {
+  categories: Category[]
+  onCancel: () => void
+  onSave: (name: string, parentId?: string) => Promise<void>
+}) {
   const [name, setName] = useState('')
   const [parent, setParent] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    try {
+      await onSave(name.trim(), parent || undefined)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div
-      className="flex items-center gap-4 px-5 py-3"
+      className="flex items-center gap-2 flex-wrap px-5 py-3"
       style={{
         background: '#F0F5F0',
         borderTop: '1px solid #F0EFEC',
-        paddingLeft: 44,
       }}
     >
       <span
@@ -186,10 +204,12 @@ function InlineAddRow({ categories, onCancel }: { categories: Category[]; onCanc
         ))}
       </select>
       <button
-        className="px-[14px] py-[6px] text-[13px] font-medium text-white rounded-[8px]"
+        onClick={handleSave}
+        disabled={saving || !name.trim()}
+        className="px-[14px] py-[6px] text-[13px] font-medium text-white rounded-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: '#7C9070', fontFamily: 'var(--font-inter)' }}
       >
-        儲存
+        {saving ? '儲存中…' : '儲存'}
       </button>
       <button
         onClick={onCancel}
@@ -219,10 +239,18 @@ export default function CategoriesPage() {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
+  const handleAddCategory = async (name: string, parentId?: string) => {
+    const res = await createCategory({ name, parentId })
+    if (res.error) return
+    const updated = await fetchCategories()
+    if (updated.data) setCategories(updated.data)
+    setShowAddRow(false)
+  }
+
   return (
     <div className="p-8 flex flex-col gap-5" style={{ fontFamily: 'var(--font-inter)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex flex-col gap-1">
           <h1
             className="text-[22px] font-bold"
@@ -251,9 +279,10 @@ export default function CategoriesPage() {
       </div>
 
       {/* 分類表格 */}
+      <div className="overflow-x-auto rounded-[12px]" style={{ border: '1px solid #F0EFEC' }}>
       <div
-        className="w-full overflow-hidden"
-        style={{ background: '#FFFFFF', borderRadius: 12, border: '1px solid #F0EFEC' }}
+        className="min-w-[500px]"
+        style={{ background: '#FFFFFF' }}
       >
         {/* 表頭 */}
         <div
@@ -286,11 +315,16 @@ export default function CategoriesPage() {
                 />
               </div>
             ))}
-            {expanded[cat.id] && showAddRow && (
-              <InlineAddRow categories={categories} onCancel={() => setShowAddRow(false)} />
-            )}
           </div>
         ))}
+        {showAddRow && (
+          <InlineAddRow
+            categories={categories}
+            onCancel={() => setShowAddRow(false)}
+            onSave={handleAddCategory}
+          />
+        )}
+      </div>
       </div>
     </div>
   )

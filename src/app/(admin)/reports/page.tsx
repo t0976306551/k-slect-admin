@@ -1,9 +1,16 @@
 import { mockOrders, mockProducts } from '@/lib/mock-data'
 import { TrendingUp, ShoppingBag, Users, Package } from 'lucide-react'
 
+const topProducts = mockProducts
+  .filter(p => p.status === 'active')
+  .slice(0, 5)
+  .map(p => ({
+    ...p,
+    soldCount: Math.floor(Math.random() * 50 + 10),
+  }))
+
 export default function ReportsPage() {
   const totalRevenue = mockOrders.reduce((acc, o) => acc + o.totalAmount, 0)
-  const completedOrders = mockOrders.filter(o => o.status === 'completed').length
   const activeProducts = mockProducts.filter(p => p.status === 'active').length
 
   const stats = [
@@ -22,7 +29,7 @@ export default function ReportsPage() {
         報表統計
       </h1>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map(stat => {
           const Icon = stat.icon
           return (
@@ -69,29 +76,31 @@ export default function ReportsPage() {
             商品銷售排行
           </span>
         </div>
-        <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
-          <span className="w-8 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>#</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>商品名稱</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>銷售數量</span>
-          <span className="w-[120px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>銷售金額</span>
-        </div>
-        {mockProducts.filter(p => p.status === 'active').slice(0, 5).map((p, i) => (
-          <div
-            key={p.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <span
-              className="w-8 text-[14px] font-bold"
-              style={{ fontFamily: 'var(--font-fraunces)', color: i < 3 ? '#7C9070' : '#8E8E93' }}
-            >
-              {i + 1}
-            </span>
-            <span className="flex-1 text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{p.name}</span>
-            <span className="w-[100px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{Math.floor(Math.random() * 50 + 10)} 件</span>
-            <span className="w-[120px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {(p.price * Math.floor(Math.random() * 50 + 10)).toLocaleString()}</span>
+        <div className="overflow-x-auto">
+          <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
+            <span className="w-8 shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>#</span>
+            <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>商品名稱</span>
+            <span className="w-[100px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>銷售數量</span>
+            <span className="w-[120px] shrink-0 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>銷售金額</span>
           </div>
-        ))}
+          {topProducts.map((p, i) => (
+            <div
+              key={p.id}
+              className="flex items-center px-5 py-3"
+              style={{ borderTop: '1px solid #F0EFEC' }}
+            >
+              <span
+                className="w-8 shrink-0 text-[14px] font-bold"
+                style={{ fontFamily: 'var(--font-fraunces)', color: i < 3 ? '#7C9070' : '#8E8E93' }}
+              >
+                {i + 1}
+              </span>
+              <span className="flex-1 text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{p.name}</span>
+              <span className="w-[100px] shrink-0 text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{p.soldCount} 件</span>
+              <span className="w-[120px] shrink-0 text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>NT$ {(p.price * p.soldCount).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

@@ -88,20 +88,24 @@ export default function NewProductPage() {
               ...o,
               position: i,
             })),
-            variants: variants.map(v => ({
-              sku: v.sku.trim(),
-              price: v.price,
-              quantity: v.quantity,
-              lowStockThreshold: v.lowStockThreshold,
-              status: v.status,
-              image: v.image,
-              // 用 label 中的值字串對應 option values
-              optionValues: options
+            variants: variants.map(v => {
+              // 先把所有有效 option values 攤平成索引陣列，以對應後端 optionValueIndices
+              const allValues = options
                 .filter(o => o.name.trim() && o.values.length > 0)
-                .flatMap(o =>
-                  o.values.filter(val => v.optionValueIds.includes(val.id)).map(val => val.value),
-                ),
-            })),
+                .flatMap(o => o.values)
+              const optionValueIndices = allValues
+                .map((val, idx) => (v.optionValueIds.includes(val.id) ? idx : -1))
+                .filter(idx => idx >= 0)
+              return {
+                sku: v.sku.trim(),
+                price: v.price,
+                quantity: v.quantity,
+                lowStockThreshold: v.lowStockThreshold,
+                status: v.status,
+                image: v.image,
+                optionValueIndices,
+              }
+            }),
           }
         : {
             name: name.trim(),

@@ -35,8 +35,8 @@ export default function BannersPage() {
   }, [])
 
   return (
-    <div className="p-8 flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-8 flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
           style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -56,51 +56,55 @@ export default function BannersPage() {
         className="flex flex-col overflow-hidden"
         style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
       >
-        <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
-          <span className="w-8" />
-          <span className="w-[200px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>預覽</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>標題</span>
-          <span className="w-[60px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>排序</span>
-          <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
-        </div>
+        <div className="overflow-x-auto">
+          <div className="min-w-[600px]">
+            <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
+              <span className="w-8" />
+              <span className="w-[200px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>預覽</span>
+              <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>標題</span>
+              <span className="w-[60px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>排序</span>
+              <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
+              <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>操作</span>
+            </div>
 
-        {banners.map(banner => (
-          <div
-            key={banner.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <div className="w-8 flex items-center justify-center cursor-grab">
-              <GripVertical size={16} color="#C0C0C0" />
-            </div>
-            <div
-              className="w-[200px] relative overflow-hidden mr-4"
-              style={{ height: 60, borderRadius: 8 }}
-            >
-              <Image
-                src={banner.imageUrl}
-                alt={banner.title}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <span className="flex-1 text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{banner.title}</span>
-            <span className="w-[60px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{banner.sort}</span>
-            <div className="w-[80px]">
-              <StatusBadge status={banner.status} />
-            </div>
-            <div className="w-[100px] flex items-center gap-2">
-              <button className="flex items-center gap-1 px-2 py-[5px] rounded-[6px] hover:bg-gray-50 transition-colors" style={{ border: '1px solid #F0EFEC' }}>
-                <Pencil size={12} color="#616161" />
-              </button>
-              <button className="flex items-center gap-1 px-2 py-[5px] rounded-[6px] hover:bg-red-50 transition-colors" style={{ border: '1px solid #FFCDD2' }}>
-                <Trash2 size={12} color="#E53935" />
-              </button>
-            </div>
+            {banners.map(banner => (
+              <div
+                key={banner.id}
+                className="flex items-center px-5 py-3"
+                style={{ borderTop: '1px solid #F0EFEC' }}
+              >
+                <div className="w-8 flex items-center justify-center cursor-grab">
+                  <GripVertical size={16} color="#C0C0C0" />
+                </div>
+                <div
+                  className="w-[200px] relative overflow-hidden mr-4 shrink-0"
+                  style={{ height: 60, borderRadius: 8 }}
+                >
+                  <Image
+                    src={banner.imageUrl}
+                    alt={banner.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+                <span className="flex-1 text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{banner.title}</span>
+                <span className="w-[60px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{banner.sort}</span>
+                <div className="w-[80px]">
+                  <StatusBadge status={banner.status} />
+                </div>
+                <div className="w-[100px] flex items-center gap-2">
+                  <button className="flex items-center gap-1 px-2 py-[5px] rounded-[6px] hover:bg-gray-50 transition-colors" style={{ border: '1px solid #F0EFEC' }}>
+                    <Pencil size={12} color="#616161" />
+                  </button>
+                  <button className="flex items-center gap-1 px-2 py-[5px] rounded-[6px] hover:bg-red-50 transition-colors" style={{ border: '1px solid #FFCDD2' }}>
+                    <Trash2 size={12} color="#E53935" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )

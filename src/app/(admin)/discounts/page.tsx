@@ -32,7 +32,7 @@ export default function DiscountsPage() {
 
   return (
     <div className="p-8 flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
           style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -53,37 +53,41 @@ export default function DiscountsPage() {
         className="flex flex-col overflow-hidden"
         style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
       >
-        <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
-          <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>活動名稱</span>
-          <span className="w-[130px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>折扣碼</span>
-          <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>折扣</span>
-          <span className="w-[120px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>使用量</span>
-          <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>有效期間</span>
-          <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
-        </div>
-
-        {discounts.map(discount => (
-          <div
-            key={discount.id}
-            className="flex items-center px-5 py-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
-            <span className="w-[160px] text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{discount.name}</span>
-            <span className="w-[130px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#7C9070' }}>{discount.code}</span>
-            <span className="w-[100px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#D4845E' }}>
-              {discount.type === 'percentage' ? `${discount.value}% off` : `NT$ ${discount.value}`}
-            </span>
-            <span className="w-[120px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
-              {discount.usedCount}{discount.usageLimit ? ` / ${discount.usageLimit}` : ''}
-            </span>
-            <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
-              {discount.startDate} — {discount.endDate}
-            </span>
-            <div className="w-[80px]">
-              <StatusBadge status={discount.status} />
+        <div className="overflow-x-auto">
+          <div className="min-w-[680px]">
+            <div className="flex items-center px-5 py-[10px]" style={{ background: '#FAFAF8' }}>
+              <span className="w-[160px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>活動名稱</span>
+              <span className="w-[130px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>折扣碼</span>
+              <span className="w-[100px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>折扣</span>
+              <span className="w-[120px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>使用量</span>
+              <span className="flex-1 text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>有效期間</span>
+              <span className="w-[80px] text-[11px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>狀態</span>
             </div>
+
+            {discounts.map(discount => (
+              <div
+                key={discount.id}
+                className="flex items-center px-5 py-3"
+                style={{ borderTop: '1px solid #F0EFEC' }}
+              >
+                <span className="w-[160px] text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{discount.name}</span>
+                <span className="w-[130px] text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#7C9070' }}>{discount.code}</span>
+                <span className="w-[100px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#D4845E' }}>
+                  {discount.type === 'percentage' ? `${discount.value}% off` : `NT$ ${discount.value}`}
+                </span>
+                <span className="w-[120px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
+                  {discount.usedCount}{discount.usageLimit ? ` / ${discount.usageLimit}` : ''}
+                </span>
+                <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
+                  {discount.startDate} — {discount.endDate}
+                </span>
+                <div className="w-[80px]">
+                  <StatusBadge status={discount.status} />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )

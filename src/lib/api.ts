@@ -1,4 +1,4 @@
-import type { ApiResponse, Product, AdminOrder, Category, Inventory, Promotion, Member, Discount, RefundRequest, Banner, Notification } from '../types'
+import type { ApiResponse, Product, AdminOrder, Category, Inventory, Promotion, Member, Discount, RefundRequest, Banner, Notification, Role, Setting } from '../types'
 import {
   mockCreateProduct,
   mockFetchProducts,
@@ -11,25 +11,36 @@ import {
   mockDeleteProduct,
   mockFetchMembers,
   mockFetchDiscounts,
+  mockCreateDiscount,
   mockFetchRefunds,
   mockFetchBanners,
   mockFetchNotifications,
+  mockCreateNotification,
   mockFetchDashboardStats,
+  mockCreateCategory,
 } from './mock-handlers'
-import { mockDashboardStats } from './mock-data'
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true'
 const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL ?? ''
+
+/** 從非 httpOnly cookie `admin_jwt` 讀取後端 JWT（client-side only） */
+function getAuthToken(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(/(?:^|;\s*)admin_jwt=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
 
 async function request<T>(
   path: string,
   init?: RequestInit,
 ): Promise<ApiResponse<T>> {
+  const token = getAuthToken()
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...init?.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   })
   return res.json() as Promise<ApiResponse<T>>
@@ -74,7 +85,7 @@ export async function createProduct(data: {
     lowStockThreshold: number
     status: 'active' | 'inactive'
     image?: string | null
-    optionValues: string[]
+    optionValueIndices: number[]
   }>
 }): Promise<ApiResponse<Product>> {
   if (USE_MOCK) return mockCreateProduct(data)
@@ -108,12 +119,31 @@ export async function fetchCategories(): Promise<ApiResponse<Category[]>> {
   return request('/categories')
 }
 
+export async function createCategory(data: {
+  name: string
+  parentId?: string
+}): Promise<ApiResponse<Category>> {
+  if (USE_MOCK) return mockCreateCategory(data)
+  return request('/categories', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function updateCategory(
+  id: string,
+  data: Partial<{ name: string; parentId: string | null }>,
+): Promise<ApiResponse<Category>> {
+  return request(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function deleteCategory(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/categories/${id}`, { method: 'DELETE' })
+}
+
 // --- Orders ---
 export async function fetchOrders(params?: {
   status?: string
   page?: number
   limit?: number
-}): Promise<ApiResponse<{ orders: AdminOrder[]; total: number }>> {
+}): Promise<ApiResponse<{ orders: AdminOrder[]; total: number; page: number; limit: number }>> {
   if (USE_MOCK) return mockFetchOrders(params)
   const query = new URLSearchParams()
   if (params?.status) query.set('status', params.status)
@@ -173,10 +203,52 @@ export async function fetchDiscounts(): Promise<ApiResponse<Discount[]>> {
   return request('/discounts')
 }
 
+export async function createDiscount(data: {
+  name: string
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  minAmount?: number
+  usageLimit?: number
+  startDate: string
+  endDate: string
+}): Promise<ApiResponse<Discount>> {
+  if (USE_MOCK) return mockCreateDiscount(data)
+  return request('/discounts', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function updateDiscount(
+  id: string,
+  data: Partial<{
+    name: string
+    code: string
+    type: 'percentage' | 'fixed'
+    value: number
+    minAmount: number
+    usageLimit: number
+    startDate: string
+    endDate: string
+    status: 'active' | 'inactive' | 'expired'
+  }>,
+): Promise<ApiResponse<Discount>> {
+  return request(`/discounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function deleteDiscount(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/discounts/${id}`, { method: 'DELETE' })
+}
+
 // --- Refunds ---
 export async function fetchRefunds(): Promise<ApiResponse<RefundRequest[]>> {
   if (USE_MOCK) return mockFetchRefunds()
   return request('/refunds')
+}
+
+export async function updateRefund(
+  id: string,
+  data: { status: 'approved' | 'rejected' | 'completed'; note?: string },
+): Promise<ApiResponse<RefundRequest>> {
+  return request(`/refunds/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 }
 
 // --- Banners ---
@@ -185,14 +257,136 @@ export async function fetchBanners(): Promise<ApiResponse<Banner[]>> {
   return request('/banners')
 }
 
+export async function createBanner(data: {
+  title: string
+  imageUrl: string
+  linkUrl?: string
+  sort?: number
+  status?: 'active' | 'inactive'
+  startDate?: string
+  endDate?: string
+}): Promise<ApiResponse<Banner>> {
+  return request('/banners', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function updateBanner(
+  id: string,
+  data: Partial<{
+    title: string
+    imageUrl: string
+    linkUrl: string
+    sort: number
+    status: 'active' | 'inactive'
+    startDate: string
+    endDate: string
+  }>,
+): Promise<ApiResponse<Banner>> {
+  return request(`/banners/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function reorderBanners(
+  items: Array<{ id: string; sort: number }>,
+): Promise<ApiResponse<{ reordered: boolean }>> {
+  return request('/banners/reorder', { method: 'PATCH', body: JSON.stringify({ items }) })
+}
+
+export async function deleteBanner(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/banners/${id}`, { method: 'DELETE' })
+}
+
 // --- Notifications ---
 export async function fetchNotifications(): Promise<ApiResponse<Notification[]>> {
   if (USE_MOCK) return mockFetchNotifications()
   return request('/notifications')
 }
 
+export async function createNotification(data: {
+  title: string
+  content: string
+  type: 'promotion' | 'order' | 'system'
+  targetAudience: 'all' | 'members'
+  status: 'draft' | 'sent' | 'scheduled'
+  scheduledAt?: string
+}): Promise<ApiResponse<Notification>> {
+  if (USE_MOCK) return mockCreateNotification(data)
+  return request('/notifications', { method: 'POST', body: JSON.stringify(data) })
+}
+
 // --- Dashboard ---
-export async function fetchDashboardStats(): Promise<ApiResponse<typeof mockDashboardStats>> {
+export async function fetchDashboardStats(): Promise<ApiResponse<{
+  todayOrders: number
+  todayOrdersChange: number
+  todayRevenue: number
+  todayRevenueChange: number
+  pendingShip: number
+}>> {
   if (USE_MOCK) return mockFetchDashboardStats()
   return request('/dashboard/stats')
+}
+
+// --- Roles ---
+export async function fetchRoles(): Promise<ApiResponse<Role[]>> {
+  return request('/roles')
+}
+
+export async function fetchRoleById(id: string): Promise<ApiResponse<Role>> {
+  return request(`/roles/${id}`)
+}
+
+export async function createRole(data: {
+  name: string
+  slug: string
+  description?: string
+}): Promise<ApiResponse<Role>> {
+  return request('/roles', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function updateRole(
+  id: string,
+  data: Partial<{ name: string; description: string; isActive: boolean }>,
+): Promise<ApiResponse<Role>> {
+  return request(`/roles/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function deleteRole(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/roles/${id}`, { method: 'DELETE' })
+}
+
+export async function fetchRolePermissions(id: string): Promise<ApiResponse<string[]>> {
+  return request(`/roles/${id}/permissions`)
+}
+
+export async function setRolePermissions(
+  id: string,
+  permissions: string[],
+): Promise<ApiResponse<Role>> {
+  return request(`/roles/${id}/permissions`, { method: 'PUT', body: JSON.stringify({ permissions }) })
+}
+
+export async function fetchAllPermissions(): Promise<ApiResponse<string[]>> {
+  return request('/roles/permissions')
+}
+
+// --- Settings ---
+export async function fetchSettings(): Promise<ApiResponse<Setting>> {
+  return request('/settings')
+}
+
+export async function updateSettings(
+  data: Partial<{ storeName: string; contactEmail: string; contactPhone: string }>,
+): Promise<ApiResponse<Setting>> {
+  return request('/settings', { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+// --- Upload ---
+export async function uploadFile(file: File): Promise<ApiResponse<{ url: string; filename: string; size: number }>> {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch(`${API_URL}/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+  return res.json() as Promise<ApiResponse<{ url: string; filename: string; size: number }>>
 }

@@ -21,6 +21,87 @@ import {
   mockDashboardStats,
 } from './mock-data'
 
+export async function mockCreateDiscount(data: {
+  name: string
+  code: string
+  type: 'percentage' | 'fixed'
+  value: number
+  minAmount?: number
+  usageLimit?: number
+  startDate: string
+  endDate: string
+}): Promise<ApiResponse<Discount>> {
+  const now = new Date().toISOString()
+  const discount: Discount = {
+    id: `disc-mock-${Date.now()}`,
+    name: data.name,
+    code: data.code.toUpperCase(),
+    type: data.type,
+    value: data.value,
+    minAmount: data.minAmount,
+    usageLimit: data.usageLimit,
+    usedCount: 0,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    status: 'active',
+    createdAt: now,
+    updatedAt: now,
+  }
+  mockDiscounts.unshift(discount)
+  return { data: discount, error: null }
+}
+
+export async function mockCreateNotification(data: {
+  title: string
+  content: string
+  type: 'promotion' | 'order' | 'system'
+  targetAudience: 'all' | 'members'
+  status: 'draft' | 'sent' | 'scheduled'
+  scheduledAt?: string
+}): Promise<ApiResponse<Notification>> {
+  const now = new Date().toISOString()
+  const notification: Notification = {
+    id: `notif-mock-${Date.now()}`,
+    title: data.title,
+    content: data.content,
+    type: data.type,
+    targetAudience: data.targetAudience,
+    status: data.status,
+    sentAt: data.status === 'sent' ? now : undefined,
+    scheduledAt: data.scheduledAt,
+    createdAt: now,
+  }
+  mockNotifications.unshift(notification)
+  return { data: notification, error: null }
+}
+
+export async function mockCreateCategory(data: {
+  name: string
+  parentId?: string
+}): Promise<ApiResponse<Category>> {
+  const now = new Date().toISOString()
+  const slug = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
+  const category: Category = {
+    id: `cat-mock-${Date.now()}`,
+    name: data.name,
+    slug,
+    parentId: data.parentId ?? null,
+    _count: { products: 0 },
+    createdAt: now,
+    updatedAt: now,
+  }
+  if (data.parentId) {
+    const parent = mockCategories.find(c => c.id === data.parentId)
+    if (parent) {
+      parent.children = [...(parent.children ?? []), category]
+    }
+  } else {
+    category.children = []
+    mockCategories.push(category)
+  }
+  return { data: category, error: null }
+}
+
 export async function mockCreateProduct(data: {
   name: string
   description?: string
@@ -40,7 +121,7 @@ export async function mockCreateProduct(data: {
     lowStockThreshold: number
     status: 'active' | 'inactive'
     image?: string | null
-    optionValues: string[]
+    optionValueIndices: number[]
   }>
 }): Promise<ApiResponse<Product>> {
   const now = new Date().toISOString()
@@ -50,6 +131,10 @@ export async function mockCreateProduct(data: {
     slug: data.name.toLowerCase().replace(/\s+/g, '-'),
     description: data.description ?? null,
     price: data.price,
+    originalPrice: null,
+    externalUrl: null,
+    origin: null,
+    images: [],
     status: data.status ?? 'active',
     categoryId: data.categoryId,
     category: mockCategories
@@ -92,12 +177,14 @@ export async function mockFetchOrders(params?: {
   status?: string
   page?: number
   limit?: number
-}): Promise<ApiResponse<{ orders: AdminOrder[]; total: number }>> {
+}): Promise<ApiResponse<{ orders: AdminOrder[]; total: number; page: number; limit: number }>> {
   let results = [...mockOrders]
   if (params?.status) results = results.filter(o => o.status === params.status)
   const total = results.length
-  if (params?.limit) results = results.slice(0, params.limit)
-  return { data: { orders: results, total }, error: null }
+  const page = params?.page ?? 1
+  const limit = params?.limit ?? 20
+  results = results.slice(0, limit)
+  return { data: { orders: results, total, page, limit }, error: null }
 }
 
 export async function mockFetchOrder(id: string): Promise<ApiResponse<AdminOrder>> {

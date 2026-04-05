@@ -114,8 +114,8 @@ function ShipOrderModal({
         onClick={onClose}
       />
       <div
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5"
-        style={{ width: 440, background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5 w-[90vw] max-w-[440px]"
+        style={{ background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
       >
         <div className="flex items-center justify-between">
           <h2
@@ -209,8 +209,8 @@ function CancelOrderModal({
         onClick={onClose}
       />
       <div
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5"
-        style={{ width: 400, background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-5 w-[90vw] max-w-[440px]"
+        style={{ background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 70 }}
       >
         <div className="flex items-center justify-between">
           <h2
@@ -290,8 +290,8 @@ function OrderDetailDrawer({
       <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} />
 
       <div
-        className="fixed right-0 top-0 h-full z-50 flex flex-col overflow-hidden"
-        style={{ width: 480, background: '#FFFFFF', boxShadow: '-4px 0 24px rgba(0,0,0,0.08)' }}
+        className="fixed right-0 top-0 h-full z-50 flex flex-col overflow-hidden w-full sm:w-[480px]"
+        style={{ background: '#FFFFFF', boxShadow: '-4px 0 24px rgba(0,0,0,0.08)' }}
       >
         {/* Header */}
         <div
@@ -370,11 +370,11 @@ function OrderDetailDrawer({
               商品清單
             </h2>
             <div
-              className="rounded-[12px] overflow-hidden"
+              className="rounded-[12px] overflow-x-auto"
               style={{ border: '1px solid #F0EFEC' }}
             >
               <div
-                className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-2"
+                className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-2 min-w-[350px]"
                 style={{ background: '#FAFAF8', borderBottom: '1px solid #F0EFEC' }}
               >
                 {['商品', '數量', '單價', '小計'].map(h => (
@@ -390,7 +390,7 @@ function OrderDetailDrawer({
               {order.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-3 items-start"
+                  className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-3 items-start min-w-[350px]"
                   style={{ borderBottom: idx < order.items.length - 1 ? '1px solid #F0EFEC' : 'none' }}
                 >
                   <div className="flex flex-col gap-[2px]">
@@ -602,9 +602,10 @@ export default function OrdersPage() {
 
       {/* 訂單表格 */}
       <div
-        className="flex flex-col w-full overflow-hidden"
+        className="w-full overflow-x-auto"
         style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
       >
+      <div className="flex flex-col min-w-[700px]">
         {/* 表頭 */}
         <div
           className="flex items-center px-5 py-[10px]"
@@ -695,6 +696,7 @@ export default function OrdersPage() {
             </span>
           </div>
         )}
+      </div>
       </div>
 
       {/* Order Detail Drawer */}

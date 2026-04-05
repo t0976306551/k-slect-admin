@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Send, Clock, FileText } from 'lucide-react'
 import { fetchNotifications } from '@/lib/api'
 import type { Notification } from '@/types'
@@ -42,6 +43,7 @@ function TypeBadge({ type }: { type: string }) {
 }
 
 export default function NotificationsPage() {
+  const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export default function NotificationsPage() {
           通知推播
         </h1>
         <button
+          onClick={() => router.push('/notifications/new')}
           className="flex items-center gap-[6px] px-5 py-[10px] transition-opacity hover:opacity-80"
           style={{ background: '#7C9070', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
         >
