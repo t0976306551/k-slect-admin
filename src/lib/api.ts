@@ -58,7 +58,9 @@ export async function fetchProducts(params?: {
   if (params?.q) query.set('q', params.q)
   if (params?.status) query.set('status', params.status)
   const qs = query.toString()
-  return request(`/products${qs ? `?${qs}` : ''}`)
+  const res = await request<{ products: Product[]; total: number }>(`/products${qs ? `?${qs}` : ''}`)
+  if (res.error) return { data: null, error: res.error }
+  return { data: res.data?.products ?? [], error: null }
 }
 
 export async function fetchProduct(id: string): Promise<ApiResponse<Product>> {
@@ -101,6 +103,7 @@ export async function updateProduct(
     originalPrice: number | null
     categoryId: string
     status: 'active' | 'inactive'
+    images: string[] | null
     inventory: { sku?: string; quantity?: number }
   }>,
 ): Promise<ApiResponse<Product>> {
@@ -378,8 +381,16 @@ export async function updateSettings(
   return request('/settings', { method: 'PATCH', body: JSON.stringify(data) })
 }
 
+// --- Auth ---
+export async function changePassword(data: {
+  currentPassword: string
+  newPassword: string
+}): Promise<ApiResponse<{ message: string }>> {
+  return request('/auth/change-password', { method: 'POST', body: JSON.stringify(data) })
+}
+
 // --- Upload ---
-export async function uploadFile(file: File): Promise<ApiResponse<{ url: string; filename: string; size: number }>> {
+export async function uploadFile(file: File): Promise<ApiResponse<{ url: string; filename: string; size: number; id: string }>> {
   const token = getAuthToken()
   const formData = new FormData()
   formData.append('file', file)
@@ -388,5 +399,5 @@ export async function uploadFile(file: File): Promise<ApiResponse<{ url: string;
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   })
-  return res.json() as Promise<ApiResponse<{ url: string; filename: string; size: number }>>
+  return res.json() as Promise<ApiResponse<{ url: string; filename: string; size: number; id: string }>>
 }

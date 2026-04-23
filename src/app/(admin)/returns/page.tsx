@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { fetchRefunds } from '@/lib/api'
+import { fetchRefunds, updateRefund } from '@/lib/api'
 import type { RefundRequest } from '@/types'
 
 function StatusBadge({ status }: { status: string }) {
@@ -24,10 +24,20 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function ReturnsPage() {
   const [refunds, setRefunds] = useState<RefundRequest[]>([])
+  const [processing, setProcessing] = useState<string | null>(null)
 
   useEffect(() => {
     fetchRefunds().then(r => { if (r.data) setRefunds(r.data) })
   }, [])
+
+  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
+    setProcessing(id)
+    const res = await updateRefund(id, { status })
+    setProcessing(null)
+    if (!res.error && res.data) {
+      setRefunds(prev => prev.map(r => r.id === id ? { ...r, status } : r))
+    }
+  }
 
   return (
     <div className="p-8 flex flex-col gap-6">
@@ -72,13 +82,17 @@ export default function ReturnsPage() {
                   {refund.status === 'pending' && (
                     <>
                       <button
-                        className="px-3 py-[5px] text-[11px] font-semibold rounded-[6px] hover:opacity-80 transition-opacity"
+                        onClick={() => handleAction(refund.id, 'approved')}
+                        disabled={processing === refund.id}
+                        className="px-3 py-[5px] text-[11px] font-semibold rounded-[6px] hover:opacity-80 transition-opacity disabled:opacity-50"
                         style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
                       >
                         核准
                       </button>
                       <button
-                        className="px-3 py-[5px] text-[11px] font-medium rounded-[6px] hover:bg-red-50 transition-colors"
+                        onClick={() => handleAction(refund.id, 'rejected')}
+                        disabled={processing === refund.id}
+                        className="px-3 py-[5px] text-[11px] font-medium rounded-[6px] hover:bg-red-50 transition-colors disabled:opacity-50"
                         style={{ border: '1px solid #FFCDD2', color: '#E53935', fontFamily: 'var(--font-jakarta)' }}
                       >
                         拒絕
@@ -86,12 +100,12 @@ export default function ReturnsPage() {
                     </>
                   )}
                   {refund.status !== 'pending' && (
-                    <button
-                      className="px-3 py-[5px] text-[11px] font-medium rounded-[6px] hover:bg-gray-50 transition-colors"
+                    <span
+                      className="px-3 py-[5px] text-[11px] font-medium rounded-[6px]"
                       style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
                     >
-                      查看
-                    </button>
+                      已處理
+                    </span>
                   )}
                 </div>
               </div>

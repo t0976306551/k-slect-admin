@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ChevronDown, Upload } from 'lucide-react'
-import { mockCategories } from '@/lib/mock-data'
-import { fetchProduct, updateProduct } from '@/lib/api'
+import { fetchProduct, updateProduct, fetchCategories, uploadFile } from '@/lib/api'
+import { Toast } from '@/components/admin/Toast'
+import type { Category } from '@/types'
 
 function FormGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -49,14 +50,23 @@ export default function EditProductPage() {
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [hasVariants, setHasVariants] = useState(false)
 
+  const [images, setImages] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [allCategories, setAllCategories] = useState<Category[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const allCategories = [
-    ...mockCategories,
-    ...mockCategories.flatMap(c => c.children ?? []),
-  ]
+  useEffect(() => {
+    fetchCategories().then(r => {
+      if (r.data) {
+        const flat = r.data.flatMap(c => [c, ...(c.children ?? [])])
+        setAllCategories(flat)
+      }
+    })
+  }, [])
 
   useEffect(() => {
     fetchProduct(id).then(r => {
@@ -73,6 +83,7 @@ export default function EditProductPage() {
       setDescription(p.description ?? '')
       setStatus(p.status)
       setHasVariants((p.variants?.length ?? 0) > 0)
+      setImages(p.images ?? [])
       if (p.inventory) {
         setSku(p.inventory.sku)
         setStock(String(p.inventory.quantity))
@@ -97,6 +108,7 @@ export default function EditProductPage() {
         originalPrice: originalPrice ? Number(originalPrice) : null,
         categoryId,
         status,
+        images: images.length > 0 ? images : null,
       }
       if (!hasVariants) {
         payload.inventory = {
@@ -110,7 +122,25 @@ export default function EditProductPage() {
         setError(res.error.message)
         return
       }
-      router.push('/products')
+
+      const refreshed = await fetchProduct(id)
+      if (refreshed.data) {
+        const p = refreshed.data
+        setName(p.name)
+        setPrice(String(p.price))
+        setOriginalPrice(p.originalPrice != null ? String(p.originalPrice) : '')
+        setCategoryId(p.categoryId ?? '')
+        setDescription(p.description ?? '')
+        setStatus(p.status)
+        setHasVariants((p.variants?.length ?? 0) > 0)
+        setImages(p.images ?? [])
+        if (p.inventory) {
+          setSku(p.inventory.sku)
+          setStock(String(p.inventory.quantity))
+        }
+      }
+
+      setToast('商品已儲存')
     } finally {
       setSaving(false)
     }
@@ -128,6 +158,9 @@ export default function EditProductPage() {
 
   return (
     <div className="p-8 flex flex-col gap-6">
+      {toast && (
+        <Toast message={toast} type="success" onClose={() => setToast(null)} />
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1
@@ -293,13 +326,61 @@ export default function EditProductPage() {
             >
               商品圖片
             </h2>
-            <div
-              className="flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-gray-50"
-              style={{
-                border: '2px dashed #F0EFEC',
-                borderRadius: 12,
-                padding: '32px 16px',
+
+            {/* 現有圖片 */}
+            {images.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {images.map((url, i) => (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden"
+                    style={{ width: 80, height: 80, borderRadius: 8, border: '1px solid #F0EFEC' }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`商品圖片 ${i + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
+                      className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                    >
+                      <span style={{ color: '#fff', fontSize: 10, lineHeight: 1 }}>✕</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 上傳區 */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setUploading(true)
+                const res = await uploadFile(file)
+                setUploading(false)
+                if (res.data) {
+                  // Strip backend host → relative URL so Next.js rewrite proxies it same-origin
+                  const backendBase = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? '').replace('/api', '')
+                  const imageUrl = backendBase && res.data.url.startsWith(backendBase)
+                    ? res.data.url.slice(backendBase.length)
+                    : res.data.url
+                  setImages(prev => [...prev, imageUrl])
+                }
+                e.target.value = ''
               }}
+            />
+            <div
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className="flex flex-col items-center justify-center gap-2 transition-colors hover:bg-gray-50"
+              style={{ border: '2px dashed #F0EFEC', borderRadius: 12, padding: '24px 16px', cursor: uploading ? 'wait' : 'pointer' }}
             >
               <div
                 className="flex items-center justify-center"
@@ -307,16 +388,10 @@ export default function EditProductPage() {
               >
                 <Upload size={20} color="#7C9070" />
               </div>
-              <span
-                className="text-[13px] font-medium"
-                style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
-              >
-                點擊上傳圖片
+              <span className="text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>
+                {uploading ? '上傳中...' : '點擊上傳圖片'}
               </span>
-              <span
-                className="text-[11px]"
-                style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}
-              >
+              <span className="text-[11px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>
                 PNG, JPG 最大 5MB
               </span>
             </div>
