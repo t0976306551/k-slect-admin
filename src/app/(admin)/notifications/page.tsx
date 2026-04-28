@@ -47,7 +47,11 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   useEffect(() => {
-    fetchNotifications().then(r => { if (r.data) setNotifications(r.data) })
+    async function load() {
+      const r = await fetchNotifications()
+      if (r.data) setNotifications(r.data)
+    }
+    load()
   }, [])
 
   return (

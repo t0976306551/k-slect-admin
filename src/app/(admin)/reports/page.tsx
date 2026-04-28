@@ -14,16 +14,18 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      fetchProducts(),
-      fetchOrders(),
-      fetchMembers(),
-    ]).then(([pRes, oRes, mRes]) => {
+    async function load() {
+      const [pRes, oRes, mRes] = await Promise.all([
+        fetchProducts(),
+        fetchOrders(),
+        fetchMembers(),
+      ])
       if (pRes.data) setProducts(pRes.data)
       if (oRes.data) setOrders(oRes.data.orders)
       if (mRes.data) setMembers(mRes.data)
       setLoading(false)
-    })
+    }
+    load()
   }, [])
 
   const completedOrders = orders.filter(o => o.status !== 'cancelled')
@@ -32,17 +34,17 @@ export default function ReportsPage() {
   const activeMembers = members.filter(m => m.status === 'active').length
 
   // 從訂單明細計算商品銷售數量
-  const salesMap = new Map<string, { soldCount: number; revenue: number }>()
-  completedOrders.forEach(order => {
-    order.items?.forEach(item => {
-      if (!item.productId) return
-      const cur = salesMap.get(item.productId) ?? { soldCount: 0, revenue: 0 }
-      salesMap.set(item.productId, {
+  const salesMap = completedOrders.reduce((map, order) => {
+    for (const item of order.items ?? []) {
+      if (!item.productId) continue
+      const cur = map.get(item.productId) ?? { soldCount: 0, revenue: 0 }
+      map.set(item.productId, {
         soldCount: cur.soldCount + item.quantity,
         revenue: cur.revenue + item.priceAtOrder * item.quantity,
       })
-    })
-  })
+    }
+    return map
+  }, new Map<string, { soldCount: number; revenue: number }>())
 
   const topProducts: ProductWithSales[] = products
     .filter(p => p.status === 'active')

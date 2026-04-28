@@ -4,20 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { createNotification } from '@/lib/api'
-
-const inputStyle = {
-  background: '#F7F6F3',
-  borderRadius: 8,
-  border: '1px solid #F0EFEC',
-  height: 40,
-  fontFamily: 'var(--font-jakarta)',
-  color: '#2D2D2D',
-  fontSize: 13,
-  paddingLeft: 12,
-  paddingRight: 12,
-  outline: 'none',
-  width: '100%',
-}
+import { inputStyle } from '@/lib/styles'
 
 export default function NewNotificationPage() {
   const router = useRouter()

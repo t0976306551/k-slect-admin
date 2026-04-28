@@ -2,34 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { fetchMembers } from '@/lib/api'
+import { StatusBadge, MEMBER_STATUS_MAP } from '@/components/admin/StatusBadge'
 import type { Member } from '@/types'
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'active') {
-    return (
-      <span
-        className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-        style={{ background: '#7C907025', color: '#7C9070' }}
-      >
-        正常
-      </span>
-    )
-  }
-  return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-      style={{ background: '#E5E4E1', color: '#8E8E93' }}
-    >
-      停用
-    </span>
-  )
-}
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([])
 
   useEffect(() => {
-    fetchMembers().then(r => { if (r.data) setMembers(r.data) })
+    async function load() {
+      const r = await fetchMembers()
+      if (r.data) setMembers(r.data)
+    }
+    load()
   }, [])
 
   return (
@@ -71,7 +55,7 @@ export default function MembersPage() {
                 <span className="w-[90px] text-[12px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{member.totalOrders}</span>
                 <span className="w-[110px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#7C9070' }}>NT$ {member.totalSpent.toLocaleString()}</span>
                 <div className="w-[80px]">
-                  <StatusBadge status={member.status} />
+                  <StatusBadge status={member.status} map={MEMBER_STATUS_MAP} />
                 </div>
                 <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}>
                   {new Date(member.createdAt).toLocaleDateString('zh-TW')}

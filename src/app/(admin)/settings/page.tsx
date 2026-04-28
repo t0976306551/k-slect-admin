@@ -1,22 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { fetchSettings, updateSettings } from '@/lib/api'
-import { changePassword } from '@/lib/api'
-
-const inputStyle: React.CSSProperties = {
-  background: '#F7F6F3',
-  borderRadius: 8,
-  border: '1px solid #F0EFEC',
-  height: 38,
-  fontFamily: 'var(--font-jakarta)',
-  color: '#2D2D2D',
-  fontSize: 13,
-  paddingLeft: 12,
-  paddingRight: 12,
-  outline: 'none',
-  width: '100%',
-}
+import { fetchSettings, updateSettings, changePassword } from '@/lib/api'
+import { inputStyle } from '@/lib/styles'
 
 export default function SettingsPage() {
   const [storeName, setStoreName] = useState('')
@@ -32,13 +18,15 @@ export default function SettingsPage() {
   const [pwdMsg, setPwdMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   useEffect(() => {
-    fetchSettings().then(r => {
+    async function load() {
+      const r = await fetchSettings()
       if (r.data) {
         setStoreName(r.data.storeName ?? '')
         setContactEmail(r.data.contactEmail ?? '')
         setContactPhone(r.data.contactPhone ?? '')
       }
-    })
+    }
+    load()
   }, [])
 
   const handleSaveSettings = async () => {

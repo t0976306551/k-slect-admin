@@ -4,42 +4,9 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Plus, Pencil, Trash2, GripVertical, X } from 'lucide-react'
 import { fetchBanners, createBanner, updateBanner, deleteBanner } from '@/lib/api'
+import { inputStyle } from '@/lib/styles'
+import { StatusBadge, BANNER_STATUS_MAP } from '@/components/admin/StatusBadge'
 import type { Banner } from '@/types'
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'active') {
-    return (
-      <span
-        className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-        style={{ background: '#7C907025', color: '#7C9070' }}
-      >
-        顯示中
-      </span>
-    )
-  }
-  return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-      style={{ background: '#E5E4E1', color: '#8E8E93' }}
-    >
-      已隱藏
-    </span>
-  )
-}
-
-const inputStyle: React.CSSProperties = {
-  background: '#F7F6F3',
-  borderRadius: 8,
-  border: '1px solid #F0EFEC',
-  height: 40,
-  fontFamily: 'var(--font-jakarta)',
-  color: '#2D2D2D',
-  fontSize: 13,
-  paddingLeft: 12,
-  paddingRight: 12,
-  outline: 'none',
-  width: '100%',
-}
 
 type BannerForm = {
   title: string
@@ -61,7 +28,11 @@ export default function BannersPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchBanners().then(r => { if (r.data) setBanners(r.data) })
+    async function load() {
+      const r = await fetchBanners()
+      if (r.data) setBanners(r.data)
+    }
+    load()
   }, [])
 
   const openCreate = () => {
@@ -180,7 +151,7 @@ export default function BannersPage() {
                 <span className="flex-1 text-[13px] font-medium" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>{banner.title}</span>
                 <span className="w-[60px] text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{banner.sort}</span>
                 <div className="w-[80px]">
-                  <StatusBadge status={banner.status} />
+                  <StatusBadge status={banner.status} map={BANNER_STATUS_MAP} />
                 </div>
                 <div className="w-[100px] flex items-center gap-2">
                   <button

@@ -5,28 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react'
 import { fetchProducts, deleteProduct } from '@/lib/api'
+import { StatusBadge, PRODUCT_STATUS_MAP } from '@/components/admin/StatusBadge'
 import type { Product } from '@/types'
-
-function StatusBadge({ status }: { status: Product['status'] }) {
-  if (status === 'active') {
-    return (
-      <span
-        className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-        style={{ background: '#7C907025', color: '#7C9070' }}
-      >
-        上架中
-      </span>
-    )
-  }
-  return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-      style={{ background: '#E5E4E1', color: '#8E8E93' }}
-    >
-      已下架
-    </span>
-  )
-}
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -36,7 +16,11 @@ export default function ProductsPage() {
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    fetchProducts().then(r => { if (r.data) setProducts(r.data) })
+    async function load() {
+      const r = await fetchProducts()
+      if (r.data) setProducts(r.data)
+    }
+    load()
   }, [])
 
   const handleDelete = async () => {
@@ -226,7 +210,7 @@ export default function ProductsPage() {
 
             {/* 狀態 */}
             <div className="flex-1">
-              <StatusBadge status={product.status} />
+              <StatusBadge status={product.status} map={PRODUCT_STATUS_MAP} />
             </div>
 
             {/* 操作按鈕 */}

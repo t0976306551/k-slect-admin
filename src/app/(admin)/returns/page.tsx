@@ -2,32 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { fetchRefunds, updateRefund } from '@/lib/api'
+import { StatusBadge, REFUND_STATUS_MAP } from '@/components/admin/StatusBadge'
 import type { RefundRequest } from '@/types'
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; bg: string; color: string }> = {
-    pending: { label: '待處理', bg: '#FFF3E0', color: '#E65100' },
-    approved: { label: '已核准', bg: '#E8F5E9', color: '#2E7D32' },
-    rejected: { label: '已拒絕', bg: '#FCE4EC', color: '#C62828' },
-    completed: { label: '已完成', bg: '#F3E5F5', color: '#7B1FA2' },
-  }
-  const s = map[status] ?? { label: status, bg: '#F5F5F5', color: '#9E9E9E' }
-  return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[10px] font-semibold rounded-[12px]"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {s.label}
-    </span>
-  )
-}
 
 export default function ReturnsPage() {
   const [refunds, setRefunds] = useState<RefundRequest[]>([])
   const [processing, setProcessing] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchRefunds().then(r => { if (r.data) setRefunds(r.data) })
+    async function load() {
+      const r = await fetchRefunds()
+      if (r.data) setRefunds(r.data)
+    }
+    load()
   }, [])
 
   const handleAction = async (id: string, status: 'approved' | 'rejected') => {
@@ -76,7 +63,7 @@ export default function ReturnsPage() {
                 <span className="flex-1 text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>{refund.reason}</span>
                 <span className="w-[90px] text-[12px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#D4845E' }}>NT$ {refund.amount.toLocaleString()}</span>
                 <div className="w-[80px]">
-                  <StatusBadge status={refund.status} />
+                  <StatusBadge status={refund.status} map={REFUND_STATUS_MAP} sizeClass="text-[10px]" />
                 </div>
                 <div className="w-[120px] flex gap-2">
                   {refund.status === 'pending' && (

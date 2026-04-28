@@ -4,30 +4,18 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { fetchDiscounts } from '@/lib/api'
+import { StatusBadge, DISCOUNT_STATUS_MAP } from '@/components/admin/StatusBadge'
 import type { Discount } from '@/types'
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; bg: string; color: string }> = {
-    active: { label: '進行中', bg: '#7C907025', color: '#7C9070' },
-    inactive: { label: '未啟用', bg: '#E5E4E1', color: '#8E8E93' },
-    expired: { label: '已過期', bg: '#F5F5F5', color: '#9E9E9E' },
-  }
-  const s = map[status] ?? { label: status, bg: '#F5F5F5', color: '#9E9E9E' }
-  return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[11px] font-semibold rounded-[12px]"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {s.label}
-    </span>
-  )
-}
 
 export default function DiscountsPage() {
   const [discounts, setDiscounts] = useState<Discount[]>([])
 
   useEffect(() => {
-    fetchDiscounts().then(r => { if (r.data) setDiscounts(r.data) })
+    async function load() {
+      const r = await fetchDiscounts()
+      if (r.data) setDiscounts(r.data)
+    }
+    load()
   }, [])
 
   return (
@@ -82,7 +70,7 @@ export default function DiscountsPage() {
                   {discount.startDate} — {discount.endDate}
                 </span>
                 <div className="w-[80px]">
-                  <StatusBadge status={discount.status} />
+                  <StatusBadge status={discount.status} map={DISCOUNT_STATUS_MAP} />
                 </div>
               </div>
             ))}
