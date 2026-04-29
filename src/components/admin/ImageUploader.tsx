@@ -1,4 +1,4 @@
-import { Upload } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 
 interface ImageUploaderProps {
   readonly images: string[]
@@ -48,7 +48,7 @@ export function ImageUploader({
                 onClick={() => onRemove(i)}
                 className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
               >
-                <span style={{ color: '#fff', fontSize: 10, lineHeight: 1 }}>✕</span>
+                <X size={10} color="#fff" />
               </button>
             </div>
           ))}

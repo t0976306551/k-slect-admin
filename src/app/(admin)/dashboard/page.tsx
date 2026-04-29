@@ -1,14 +1,12 @@
 import Link from 'next/link'
 import { fetchDashboardStats, fetchOrders } from '@/lib/api'
-import { StatusBadge } from '@/components/admin/StatusBadge'
+import { StatusBadge, ORDER_STATUS_MAP } from '@/components/admin/StatusBadge'
 
-const DASHBOARD_ORDER_STATUS_MAP: Record<string, { label: string; bg: string; color: string }> = {
-  pending_ship: { label: '待出貨', bg: '#7C907025', color: '#7C9070' },
-  shipped: { label: '已出貨', bg: '#D4845E15', color: '#D4845E' },
+const DASHBOARD_ORDER_STATUS_MAP = {
+  ...ORDER_STATUS_MAP,
   pending_confirm: { label: '待確認', bg: '#5B9BD515', color: '#5B9BD5' },
   pending_payment: { label: '待付款', bg: '#5B9BD515', color: '#5B9BD5' },
-  completed: { label: '已完成', bg: '#F3E5F5', color: '#7B1FA2' },
-  cancelled: { label: '已取消', bg: '#F5F5F5', color: '#9E9E9E' },
+  shipped: { label: '已出貨', bg: '#D4845E15', color: '#D4845E' },
 }
 
 function formatAmount(n: number): string {

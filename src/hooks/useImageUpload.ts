@@ -33,18 +33,19 @@ export function useImageUpload(initialImages: string[] = []): UseImageUploadRetu
     if (!file) return
 
     setUploading(true)
-    const res = await uploadFile(file)
-    setUploading(false)
-
-    if (res.data) {
-      const backendBase = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? '').replace('/api', '')
-      const imageUrl = backendBase && res.data.url.startsWith(backendBase)
-        ? res.data.url.slice(backendBase.length)
-        : res.data.url
-      setImages(prev => [...prev, imageUrl])
+    try {
+      const res = await uploadFile(file)
+      if (res.data) {
+        const backendBase = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? '').replace('/api', '')
+        const imageUrl = backendBase && res.data.url.startsWith(backendBase)
+          ? res.data.url.slice(backendBase.length)
+          : res.data.url
+        setImages(prev => [...prev, imageUrl])
+      }
+    } finally {
+      setUploading(false)
+      e.target.value = ''
     }
-
-    e.target.value = ''
   }, [])
 
   const removeImage = useCallback((index: number) => {

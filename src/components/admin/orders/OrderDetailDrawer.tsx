@@ -1,4 +1,5 @@
-import { ORDER_STATUS_MAP } from '@/components/admin/StatusBadge'
+import { X } from 'lucide-react'
+import { ORDER_STATUS_MAP, StatusBadge } from '@/components/admin/StatusBadge'
 import { InfoRow } from '@/components/admin/InfoRow'
 import type { AdminOrder } from '@/types'
 
@@ -7,10 +8,6 @@ interface OrderDetailDrawerProps {
   onClose: () => void
   onShipOrder: (order: AdminOrder) => void
   onCancelOrder: (order: AdminOrder) => void
-}
-
-function statusLabel(status: AdminOrder['status']): { label: string; bg: string; color: string } {
-  return ORDER_STATUS_MAP[status] ?? { label: status, bg: '#F5F5F5', color: '#9E9E9E' }
 }
 
 // --- 區塊標題 ---
@@ -104,7 +101,6 @@ export function OrderDetailDrawer({
   onShipOrder,
   onCancelOrder,
 }: OrderDetailDrawerProps) {
-  const st = statusLabel(order.status)
   const showFooter = order.status === 'pending_ship'
 
   return (
@@ -127,19 +123,14 @@ export function OrderDetailDrawer({
             >
               {order.orderNo}
             </span>
-            <span
-              className="inline-flex items-center px-[8px] py-[3px] text-[10px] font-semibold rounded-[12px]"
-              style={{ background: st.bg, color: st.color }}
-            >
-              {st.label}
-            </span>
+            <StatusBadge status={order.status} map={ORDER_STATUS_MAP} sizeClass="text-[10px]" />
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100"
             style={{ color: '#6B6B6B' }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
 

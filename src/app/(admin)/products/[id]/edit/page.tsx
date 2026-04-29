@@ -146,6 +146,7 @@ export default function EditProductPage() {
       <PageHeader
         title="編輯商品"
         saving={saving}
+        saveLabel="儲存商品"
         onCancel={() => router.back()}
         onSave={handleSubmit}
       />

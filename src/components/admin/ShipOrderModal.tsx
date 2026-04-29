@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { InfoRow } from './InfoRow'
 import type { AdminOrder } from '@/types'
 
@@ -13,10 +14,14 @@ interface ShipOrderModalProps {
 export function ShipOrderModal({ order, onConfirm, onClose }: ShipOrderModalProps) {
   const [loading, setLoading] = useState(false)
 
-  const handleConfirm = async () => {
+  async function handleConfirm() {
     setLoading(true)
-    await onConfirm()
-    onClose()
+    try {
+      await onConfirm()
+      onClose()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,7 +47,7 @@ export function ShipOrderModal({ order, onConfirm, onClose }: ShipOrderModalProp
             className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"
             style={{ color: '#6B6B6B' }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
 
@@ -65,7 +70,7 @@ export function ShipOrderModal({ order, onConfirm, onClose }: ShipOrderModalProp
           className="flex items-start gap-2 rounded-[10px] p-3"
           style={{ background: '#E8F5E9', border: '1px solid #C8E6C9' }}
         >
-          <span className="text-[13px] mt-[1px]">ℹ️</span>
+          <span className="text-[13px] mt-[1px] text-[#2E7D32]">ℹ</span>
           <p
             className="text-[12px] leading-relaxed"
             style={{ fontFamily: 'var(--font-jakarta)', color: '#2E7D32' }}

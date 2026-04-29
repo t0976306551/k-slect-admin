@@ -1,4 +1,4 @@
-import { ORDER_STATUS_MAP } from '@/components/admin/StatusBadge'
+import { ORDER_STATUS_MAP, StatusBadge } from '@/components/admin/StatusBadge'
 import type { AdminOrder } from '@/types'
 
 // --- ActionButton ---
@@ -71,10 +71,6 @@ interface OrderTableProps {
   onShipOrder: (order: AdminOrder) => void
 }
 
-function statusLabel(status: AdminOrder['status']): { label: string; bg: string; color: string } {
-  return ORDER_STATUS_MAP[status] ?? { label: status, bg: '#F5F5F5', color: '#9E9E9E' }
-}
-
 export function OrderTable({ orders, searchQuery, onSelectOrder, onShipOrder }: OrderTableProps) {
   return (
     <div
@@ -85,7 +81,6 @@ export function OrderTable({ orders, searchQuery, onSelectOrder, onShipOrder }: 
         <TableHeader />
 
         {orders.map(order => {
-          const st = statusLabel(order.status)
           const itemSummary = order.items.map(i => `${i.productName} x${i.quantity}`).join(', ')
 
           return (
@@ -131,12 +126,7 @@ export function OrderTable({ orders, searchQuery, onSelectOrder, onShipOrder }: 
               </span>
 
               <div className="w-[80px]">
-                <span
-                  className="inline-flex items-center px-[8px] py-[3px] text-[10px] font-semibold rounded-[12px]"
-                  style={{ background: st.bg, color: st.color }}
-                >
-                  {st.label}
-                </span>
+                <StatusBadge status={order.status} map={ORDER_STATUS_MAP} sizeClass="text-[10px]" />
               </div>
 
               <div className="flex-1">

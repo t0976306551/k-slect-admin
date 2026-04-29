@@ -129,6 +129,7 @@ export default function NewProductPage() {
       <PageHeader
         title="新增商品"
         saving={saving}
+        saveLabel="儲存商品"
         onCancel={() => router.back()}
         onSave={handleSubmit}
       />

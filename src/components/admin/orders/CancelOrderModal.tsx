@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { InfoRow } from '@/components/admin/InfoRow'
 import type { AdminOrder } from '@/types'
 
@@ -15,8 +16,12 @@ export function CancelOrderModal({ order, onConfirm, onClose }: CancelOrderModal
 
   async function handleConfirm() {
     setLoading(true)
-    await onConfirm()
-    onClose()
+    try {
+      await onConfirm()
+      onClose()
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,7 +47,7 @@ export function CancelOrderModal({ order, onConfirm, onClose }: CancelOrderModal
             className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"
             style={{ color: '#6B6B6B' }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
 
