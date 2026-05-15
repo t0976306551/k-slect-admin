@@ -38,8 +38,8 @@ export async function mockCreateDiscount(data: {
     code: data.code.toUpperCase(),
     type: data.type,
     value: data.value,
-    minAmount: data.minAmount,
-    usageLimit: data.usageLimit,
+    minAmount: data.minAmount ?? null,
+    usageLimit: data.usageLimit ?? null,
     usedCount: 0,
     startDate: data.startDate,
     endDate: data.endDate,
@@ -70,6 +70,7 @@ export async function mockCreateNotification(data: {
     sentAt: data.status === 'sent' ? now : undefined,
     scheduledAt: data.scheduledAt,
     createdAt: now,
+    updatedAt: now,
   }
   mockNotifications.unshift(notification)
   return { data: notification, error: null }

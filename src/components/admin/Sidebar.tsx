@@ -14,24 +14,17 @@ import {
   Image,
   Bell,
   Settings,
-  FolderTree,
 } from 'lucide-react'
 
 interface NavItem {
   label: string
   href: string
   icon: React.ComponentType<{ size?: number; className?: string; color?: string }>
-  children?: { label: string; href: string }[]
 }
 
 const navItems: NavItem[] = [
   { label: '儀表板', href: '/dashboard', icon: LayoutDashboard },
-  {
-    label: '商品管理', href: '/products', icon: Package,
-    children: [
-      { label: '商品分類', href: '/categories' },
-    ],
-  },
+  { label: '商品管理', href: '/products', icon: Package },
   { label: '訂單管理', href: '/orders', icon: ClipboardList },
   { label: '出貨管理', href: '/shipping', icon: Truck },
   { label: '退款管理', href: '/returns', icon: Undo2 },
@@ -124,36 +117,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   {item.label}
                 </span>
               </Link>
-              {/* Sub items */}
-              {item.children && (active || item.children.some(c => pathname.startsWith(c.href))) && (
-                <div className="ml-[44px] flex flex-col gap-[2px] mt-1">
-                  {item.children.map((child) => {
-                    const childActive = pathname.startsWith(child.href)
-                    return (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="flex items-center gap-2 px-3 py-[6px] rounded-[6px] transition-colors"
-                        style={{
-                          background: childActive ? '#7C907015' : 'transparent',
-                          color: childActive ? '#7C9070' : '#8E8E93',
-                        }}
-                      >
-                        <FolderTree size={14} style={{ color: childActive ? '#7C9070' : '#8E8E93' }} />
-                        <span
-                          className="text-[12px]"
-                          style={{
-                            fontFamily: 'var(--font-jakarta)',
-                            fontWeight: childActive ? 600 : 400,
-                          }}
-                        >
-                          {child.label}
-                        </span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
+
             </div>
           )
         })}
