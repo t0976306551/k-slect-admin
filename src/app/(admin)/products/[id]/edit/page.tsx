@@ -12,6 +12,22 @@ import { StatusPicker } from '@/components/admin/StatusPicker'
 import { ProductFormFields } from '@/components/admin/ProductFormFields'
 import type { ProductFormValues } from '@/components/admin/ProductFormFields'
 import { Toast } from '@/components/admin/Toast'
+import { VariantTable } from '@/components/admin/VariantTable'
+import type { ProductVariantRow, ProductVariant } from '@/types'
+
+function variantsToRows(variants: ProductVariant[]): ProductVariantRow[] {
+  return variants.map(v => ({
+    id: v.id,
+    sku: v.sku,
+    price: v.price,
+    quantity: v.quantity,
+    lowStockThreshold: v.lowStockThreshold,
+    status: v.status,
+    image: v.image,
+    optionValueIds: (v.optionValues ?? []).map(ov => ov.id),
+    label: (v.optionValues ?? []).map(ov => ov.value).join(' / '),
+  }))
+}
 
 function hydrateForm(p: {
   name: string
@@ -50,6 +66,7 @@ export default function EditProductPage() {
   })
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [hasVariants, setHasVariants] = useState(false)
+  const [variants, setVariants] = useState<ProductVariantRow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,18 +81,24 @@ export default function EditProductPage() {
 
   useEffect(() => {
     async function loadProduct() {
-      const r = await fetchProduct(id)
-      if (r.error || !r.data) {
-        setError('商品不存在')
+      try {
+        const r = await fetchProduct(id)
+        if (r.error || !r.data) {
+          setError('商品不存在')
+          setLoading(false)
+          return
+        }
+        const p = r.data
+        setForm(hydrateForm(p))
+        setStatus(p.status)
+        setHasVariants((p.variants?.length ?? 0) > 0)
+        setVariants(variantsToRows(p.variants ?? []))
+        imageUpload.setImages(p.images ?? [])
         setLoading(false)
-        return
+      } catch {
+        setError('載入失敗，請重試')
+        setLoading(false)
       }
-      const p = r.data
-      setForm(hydrateForm(p))
-      setStatus(p.status)
-      setHasVariants((p.variants?.length ?? 0) > 0)
-      imageUpload.setImages(p.images ?? [])
-      setLoading(false)
     }
     loadProduct()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,6 +127,16 @@ export default function EditProductPage() {
           sku: form.sku.trim(),
           quantity: Number(form.stock) || 0,
         }
+      } else if (variants.length > 0) {
+        payload.variants = variants
+          .filter(v => v.id)
+          .map(v => ({
+            id: v.id!,
+            sku: v.sku,
+            price: v.price,
+            quantity: v.quantity,
+            status: v.status,
+          }))
       }
 
       const res = await updateProduct(id, payload)
@@ -118,6 +151,7 @@ export default function EditProductPage() {
         setForm(hydrateForm(p))
         setStatus(p.status)
         setHasVariants((p.variants?.length ?? 0) > 0)
+        setVariants(variantsToRows(p.variants ?? []))
         imageUpload.setImages(p.images ?? [])
       }
 
@@ -173,12 +207,12 @@ export default function EditProductPage() {
             onChange={handleFormChange}
           />
 
-          {hasVariants && (
-            <div
-              className="px-4 py-3 text-[13px] rounded-[10px]"
-              style={{ background: '#F7F6F3', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)', border: '1px solid #F0EFEC' }}
-            >
-              此商品含有型號規格，型號資訊請透過型號管理調整。
+          {hasVariants && variants.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <span className="text-[13px] font-semibold" style={{ color: '#2D2D2D', fontFamily: 'var(--font-jakarta)' }}>
+                型號規格
+              </span>
+              <VariantTable variants={variants} onChange={setVariants} />
             </div>
           )}
         </div>

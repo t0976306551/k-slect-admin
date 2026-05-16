@@ -116,6 +116,7 @@ export async function updateProduct(
     status: 'active' | 'inactive'
     images: string[] | null
     inventory: { sku?: string; quantity?: number }
+    variants: Array<{ id: string; sku?: string; price?: number | null; quantity?: number; status?: 'active' | 'inactive' }>
   }>,
 ): Promise<ApiResponse<Product>> {
   if (USE_MOCK) return mockUpdateProduct(id, data)

@@ -7,8 +7,6 @@ import type {
   RefundRequest,
   Banner,
   Notification,
-  OrderStatus,
-  PaymentMethod,
 } from '../types'
 
 // Mock Categories

@@ -17,13 +17,18 @@ export function Dialog({ open, onClose, title, children, maxWidth = 440 }: Dialo
 
   useEffect(() => {
     if (open) {
-      setMounted(true)
-      const t = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+      const t = requestAnimationFrame(() => {
+        setMounted(true)
+        requestAnimationFrame(() => setVisible(true))
+      })
       return () => cancelAnimationFrame(t)
     } else {
-      setVisible(false)
-      const t = setTimeout(() => setMounted(false), 260)
-      return () => clearTimeout(t)
+      const rafId = requestAnimationFrame(() => setVisible(false))
+      const timeoutId = setTimeout(() => setMounted(false), 260)
+      return () => {
+        cancelAnimationFrame(rafId)
+        clearTimeout(timeoutId)
+      }
     }
   }, [open])
 
