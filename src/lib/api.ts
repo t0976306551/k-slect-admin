@@ -13,7 +13,6 @@ import {
   mockFetchDiscounts,
   mockCreateDiscount,
   mockFetchRefunds,
-  mockFetchBanners,
   mockFetchNotifications,
   mockCreateNotification,
   mockFetchDashboardStats,
@@ -43,6 +42,17 @@ async function request<T>(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   })
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' })
+      } catch (err) {
+        console.error('登出請求失敗', err)
+      }
+      window.location.href = '/login'
+    }
+    return { data: null, error: { code: 'UNAUTHORIZED', message: '登入已過期，請重新登入' } }
+  }
   return res.json() as Promise<ApiResponse<T>>
 }
 
@@ -74,6 +84,7 @@ export async function createProduct(data: {
   price: number
   categoryId: string
   status?: 'active' | 'inactive'
+  images?: string[]
   inventory?: { sku: string; quantity: number; lowStockThreshold?: number }
   options?: Array<{
     name: string
@@ -256,7 +267,6 @@ export async function updateRefund(
 
 // --- Banners ---
 export async function fetchBanners(): Promise<ApiResponse<Banner[]>> {
-  if (USE_MOCK) return mockFetchBanners()
   return request('/banners')
 }
 

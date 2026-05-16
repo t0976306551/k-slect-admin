@@ -30,7 +30,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      router.push('/products')
     } catch {
       setError('網路異常，請稍後再試')
     } finally {

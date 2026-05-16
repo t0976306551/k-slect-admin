@@ -1,19 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard,
   Package,
-  ClipboardList,
-  Truck,
-  Tag,
-  Users,
-  Undo2,
-  BarChart3,
-  Image,
-  Bell,
+  FolderOpen,
   Settings,
+  LogOut,
 } from 'lucide-react'
 
 interface NavItem {
@@ -23,16 +16,18 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: '儀表板', href: '/dashboard', icon: LayoutDashboard },
+  // { label: '儀表板', href: '/dashboard', icon: LayoutDashboard },
   { label: '商品管理', href: '/products', icon: Package },
-  { label: '訂單管理', href: '/orders', icon: ClipboardList },
-  { label: '出貨管理', href: '/shipping', icon: Truck },
-  { label: '退款管理', href: '/returns', icon: Undo2 },
-  { label: '折扣活動', href: '/discounts', icon: Tag },
-  { label: '會員管理', href: '/members', icon: Users },
-  { label: '報表統計', href: '/reports', icon: BarChart3 },
-  { label: 'Banner 管理', href: '/banners', icon: Image },
-  { label: '通知推播', href: '/notifications', icon: Bell },
+  { label: '商品分類', href: '/categories', icon: FolderOpen },
+  // DISABLED: 前台已移除購物/結帳/會員功能
+  // { label: '訂單管理', href: '/orders', icon: ClipboardList },
+  // { label: '出貨管理', href: '/shipping', icon: Truck },
+  // { label: '退款管理', href: '/returns', icon: Undo2 },
+  // { label: '折扣活動', href: '/discounts', icon: Tag },
+  // { label: '會員管理', href: '/members', icon: Users },
+  // { label: '報表統計', href: '/reports', icon: BarChart3 },
+  // { label: 'Banner 管理', href: '/banners', icon: Image },
+  // { label: '通知推播', href: '/notifications', icon: Bell },
   { label: '系統設定', href: '/settings', icon: Settings },
 ]
 
@@ -43,6 +38,16 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (err) {
+      console.error('登出請求失敗', err)
+    }
+    router.push('/login')
+  }
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard'
@@ -124,10 +129,23 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4" style={{ borderTop: '1px solid #F0EFEC' }}>
+      <div className="px-2 py-3 flex flex-col gap-1" style={{ borderTop: '1px solid #F0EFEC' }}>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-[10px] px-3 py-[10px] rounded-[8px] w-full transition-colors hover:bg-[#F7F6F3]"
+          style={{ color: '#6B6B6B' }}
+        >
+          <LogOut size={18} color="#8E8E93" className="shrink-0" />
+          <span
+            className="text-[13px] leading-none"
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500 }}
+          >
+            登出
+          </span>
+        </button>
         <p
-          className="text-[11px] text-center"
-          style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}
+          className="text-[11px] text-center pb-1"
+          style={{ fontFamily: 'var(--font-jakarta)', color: '#C7C7CC' }}
         >
           © 2026 K-slect
         </p>

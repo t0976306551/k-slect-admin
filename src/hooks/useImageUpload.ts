@@ -36,11 +36,7 @@ export function useImageUpload(initialImages: string[] = []): UseImageUploadRetu
     try {
       const res = await uploadFile(file)
       if (res.data) {
-        const backendBase = (process.env.NEXT_PUBLIC_ADMIN_API_URL ?? '').replace('/api', '')
-        const imageUrl = backendBase && res.data.url.startsWith(backendBase)
-          ? res.data.url.slice(backendBase.length)
-          : res.data.url
-        setImages(prev => [...prev, imageUrl])
+        setImages(prev => [...prev, res.data.url])
       }
     } finally {
       setUploading(false)
