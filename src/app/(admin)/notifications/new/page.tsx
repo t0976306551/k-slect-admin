@@ -55,7 +55,7 @@ export default function NewNotificationPage() {
           <button
             onClick={handleSubmit}
             disabled={loading || !title || !content}
-            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
           >
             {loading ? '送出中…' : '送出推播'}
@@ -75,6 +75,7 @@ export default function NewNotificationPage() {
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="推播標題"
+              className="admin-input"
               style={inputStyle}
             />
           </div>
@@ -86,6 +87,7 @@ export default function NewNotificationPage() {
               onChange={e => setContent(e.target.value)}
               placeholder="推播內容"
               rows={4}
+              className="admin-input resize-none"
               style={{
                 ...inputStyle,
                 height: 'auto',
@@ -103,7 +105,7 @@ export default function NewNotificationPage() {
                 <select
                   value={type}
                   onChange={e => setType(e.target.value as typeof type)}
-                  className="appearance-none w-full outline-none"
+                  className="appearance-none w-full admin-input"
                   style={{ ...inputStyle, paddingRight: 32 }}
                 >
                   <option value="promotion">促銷</option>
@@ -119,7 +121,7 @@ export default function NewNotificationPage() {
                 <select
                   value={targetAudience}
                   onChange={e => setTargetAudience(e.target.value as typeof targetAudience)}
-                  className="appearance-none w-full outline-none"
+                  className="appearance-none w-full admin-input"
                   style={{ ...inputStyle, paddingRight: 32 }}
                 >
                   <option value="all">全部用戶</option>
@@ -137,7 +139,7 @@ export default function NewNotificationPage() {
                 <select
                   value={status}
                   onChange={e => setStatus(e.target.value as typeof status)}
-                  className="appearance-none w-full outline-none"
+                  className="appearance-none w-full admin-input"
                   style={{ ...inputStyle, paddingRight: 32 }}
                 >
                   <option value="draft">草稿</option>
@@ -154,6 +156,7 @@ export default function NewNotificationPage() {
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={e => setScheduledAt(e.target.value)}
+                  className="admin-input"
                   style={inputStyle}
                 />
               </div>

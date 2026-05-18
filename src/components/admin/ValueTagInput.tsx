@@ -71,7 +71,7 @@ export function ValueTagInput({ values, onChange, placeholder = '輸入值，Ent
         onKeyDown={handleKeyDown}
         onBlur={addValue}
         placeholder={values.length === 0 ? placeholder : ''}
-        className="flex-1 min-w-[120px] outline-none bg-transparent text-[13px]"
+        className="flex-1 min-w-[120px] admin-input bg-transparent text-[13px]"
         style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
       />
     </div>

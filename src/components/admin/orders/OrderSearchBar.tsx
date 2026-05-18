@@ -18,7 +18,7 @@ export function OrderSearchBar({ value, onChange }: OrderSearchBarProps) {
         placeholder="搜尋訂單編號或客戶姓名..."
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full pl-9 pr-4 py-[10px] text-[13px] rounded-[12px] outline-none"
+        className="w-full pl-9 pr-4 py-[10px] text-[13px] rounded-[12px] admin-input"
         style={{
           border: '1px solid #F0EFEC',
           background: '#FFFFFF',

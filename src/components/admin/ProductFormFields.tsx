@@ -18,6 +18,7 @@ interface ProductFormFieldsProps {
   readonly hasVariants: boolean
   readonly categories: Category[]
   readonly onChange: <K extends keyof ProductFormValues>(field: K, value: ProductFormValues[K]) => void
+  readonly errors?: Partial<Record<keyof ProductFormValues, string>>
 }
 
 const textareaStyle: React.CSSProperties = {
@@ -34,37 +35,40 @@ export function ProductFormFields({
   hasVariants,
   categories,
   onChange,
+  errors = {},
 }: ProductFormFieldsProps) {
   return (
     <>
-      <FormGroup label="商品名稱">
+      <FormGroup label="商品名稱" error={errors.name}>
         <input
           type="text"
           value={values.name}
           onChange={e => onChange('name', e.target.value)}
           placeholder="輸入商品名稱"
+          className="admin-input"
           style={inputStyle}
         />
       </FormGroup>
 
       <div className="grid grid-cols-2 gap-4">
         {!hasVariants && (
-          <FormGroup label="SKU">
+          <FormGroup label="SKU" error={errors.sku}>
             <input
               type="text"
               value={values.sku}
               onChange={e => onChange('sku', e.target.value)}
               placeholder="如：CRX-SNL-001"
+              className="admin-input"
               style={inputStyle}
             />
           </FormGroup>
         )}
-        <FormGroup label="商品分類">
+        <FormGroup label="商品分類" error={errors.categoryId}>
           <div className="relative">
             <select
               value={values.categoryId}
               onChange={e => onChange('categoryId', e.target.value)}
-              className="appearance-none w-full outline-none"
+              className="appearance-none w-full admin-input"
               style={{ ...inputStyle, paddingRight: 32 }}
             >
               <option value="">選擇分類</option>
@@ -84,12 +88,13 @@ export function ProductFormFields({
       </div>
 
       <div className={`grid gap-4 ${hasVariants ? 'grid-cols-2' : 'grid-cols-3'}`}>
-        <FormGroup label="售價 (NT$)">
+        <FormGroup label="售價 (NT$)" error={errors.price}>
           <input
             type="number"
             value={values.price}
             onChange={e => onChange('price', e.target.value)}
             placeholder="0"
+            className="admin-input"
             style={inputStyle}
           />
         </FormGroup>
@@ -99,6 +104,7 @@ export function ProductFormFields({
             value={values.originalPrice}
             onChange={e => onChange('originalPrice', e.target.value)}
             placeholder="選填"
+            className="admin-input"
             style={inputStyle}
           />
         </FormGroup>
@@ -109,6 +115,7 @@ export function ProductFormFields({
               value={values.stock}
               onChange={e => onChange('stock', e.target.value)}
               placeholder="0"
+              className="admin-input"
               style={inputStyle}
             />
           </FormGroup>
@@ -121,7 +128,7 @@ export function ProductFormFields({
           onChange={e => onChange('description', e.target.value)}
           placeholder="輸入商品描述..."
           rows={4}
-          className="resize-none outline-none px-3 py-2 text-[13px]"
+          className="resize-none admin-input px-3 py-2 text-[13px]"
           style={textareaStyle}
         />
       </FormGroup>

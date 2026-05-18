@@ -12,8 +12,11 @@ import { StatusPicker } from '@/components/admin/StatusPicker'
 import { ProductFormFields } from '@/components/admin/ProductFormFields'
 import type { ProductFormValues } from '@/components/admin/ProductFormFields'
 import { Toast } from '@/components/admin/Toast'
+import { Dialog } from '@/components/admin/Dialog'
+import { VariantToggle } from '@/components/admin/VariantToggle'
+import { VariantBuilder } from '@/components/admin/VariantBuilder'
 import { VariantTable } from '@/components/admin/VariantTable'
-import type { ProductVariantRow, ProductVariant } from '@/types'
+import type { ProductOptionDraft, ProductVariantRow, ProductVariant } from '@/types'
 
 function variantsToRows(variants: ProductVariant[]): ProductVariantRow[] {
   return variants.map(v => ({
@@ -66,18 +69,49 @@ export default function EditProductPage() {
   })
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [hasVariants, setHasVariants] = useState(false)
+  // true = 本次 session 剛從「無型號」切換為「有型號」，顯示 VariantBuilder
+  const [isAddingVariants, setIsAddingVariants] = useState(false)
+  const [options, setOptions] = useState<ProductOptionDraft[]>([])
   const [variants, setVariants] = useState<ProductVariantRow[]>([])
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({})
   const [toast, setToast] = useState<string | null>(null)
 
   const handleFormChange = useCallback(
     <K extends keyof ProductFormValues>(field: K, value: ProductFormValues[K]) => {
       setForm(prev => ({ ...prev, [field]: value }))
+      setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n })
     },
     [],
   )
+
+  const confirmClearVariants = useCallback(() => {
+    setShowClearConfirm(false)
+    setHasVariants(false)
+    setIsAddingVariants(false)
+    setOptions([])
+    setVariants([])
+    setForm(f => ({ ...f, sku: '', stock: '' }))
+  }, [])
+
+  const toggleVariants = useCallback(() => {
+    setHasVariants(prev => {
+      if (prev) {
+        // 有型號 → 開啟確認 dialog，實際切換在 confirmClearVariants
+        setShowClearConfirm(true)
+        return prev
+      } else {
+        // 無型號 → 直接切換為有型號
+        setIsAddingVariants(true)
+        setOptions([])
+        setVariants([])
+        return true
+      }
+    })
+  }, [])
 
   useEffect(() => {
     async function loadProduct() {
@@ -92,6 +126,8 @@ export default function EditProductPage() {
         setForm(hydrateForm(p))
         setStatus(p.status)
         setHasVariants((p.variants?.length ?? 0) > 0)
+        setIsAddingVariants(false)
+        setOptions([])
         setVariants(variantsToRows(p.variants ?? []))
         imageUpload.setImages(p.images ?? [])
         setLoading(false)
@@ -105,15 +141,29 @@ export default function EditProductPage() {
   }, [id])
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) { setError('請輸入商品名稱'); return }
-    if (!form.price || Number(form.price) <= 0) { setError('請輸入有效售價'); return }
-    if (!form.categoryId) { setError('請選擇商品分類'); return }
+    const errs: Partial<Record<keyof ProductFormValues, string>> = {}
+    if (!form.name.trim()) errs.name = '請輸入商品名稱'
+    if (!hasVariants && !form.sku.trim()) errs.sku = '請輸入 SKU'
+    if (!form.price || Number(form.price) <= 0) errs.price = '請輸入有效售價'
+    if (!form.categoryId) errs.categoryId = '請選擇商品分類'
 
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
+      setError(null)
+      return
+    }
+
+    if (hasVariants && isAddingVariants) {
+      if (variants.length === 0) { setError('請先產生型號組合'); return }
+      if (variants.some(v => !v.sku.trim())) { setError('請填寫所有型號的 SKU'); return }
+    }
+
+    setFieldErrors({})
     setError(null)
     setSaving(true)
 
     try {
-      const payload: Parameters<typeof updateProduct>[1] = {
+      const base: Parameters<typeof updateProduct>[1] = {
         name: form.name.trim(),
         description: form.description.trim() || null,
         price: Number(form.price),
@@ -122,13 +172,38 @@ export default function EditProductPage() {
         status,
         images: imageUpload.images.length > 0 ? imageUpload.images : null,
       }
+
       if (!hasVariants) {
-        payload.inventory = {
+        // Case A：無型號 → 傳 inventory，後端清除 variants/options
+        base.inventory = {
           sku: form.sku.trim(),
           quantity: Number(form.stock) || 0,
         }
-      } else if (variants.length > 0) {
-        payload.variants = variants
+      } else if (isAddingVariants) {
+        // Case B：新增型號（原本無型號）→ 傳 options + 新 variants
+        const validOptions = options.filter(o => o.name.trim() && o.values.length > 0)
+        const allValues = validOptions.flatMap(o => o.values)
+        base.options = validOptions.map((o, i) => ({
+          name: o.name,
+          position: i,
+          values: o.values.map((v, vi) => ({ value: v.value, position: vi })),
+        }))
+        base.variants = variants.map(v => {
+          const optionValueIndices = allValues
+            .map((val, idx) => (v.optionValueIds.includes(val.id) ? idx : -1))
+            .filter(idx => idx >= 0)
+          return {
+            sku: v.sku.trim(),
+            price: v.price,
+            quantity: v.quantity,
+            lowStockThreshold: v.lowStockThreshold,
+            status: v.status,
+            optionValueIndices,
+          }
+        })
+      } else {
+        // Case C：編輯既有型號 → 傳 variants with id
+        base.variants = variants
           .filter(v => v.id)
           .map(v => ({
             id: v.id!,
@@ -139,7 +214,7 @@ export default function EditProductPage() {
           }))
       }
 
-      const res = await updateProduct(id, payload)
+      const res = await updateProduct(id, base)
       if (res.error) {
         setError(res.error.message)
         return
@@ -151,6 +226,8 @@ export default function EditProductPage() {
         setForm(hydrateForm(p))
         setStatus(p.status)
         setHasVariants((p.variants?.length ?? 0) > 0)
+        setIsAddingVariants(false)
+        setOptions([])
         setVariants(variantsToRows(p.variants ?? []))
         imageUpload.setImages(p.images ?? [])
       }
@@ -176,6 +253,39 @@ export default function EditProductPage() {
       {toast && (
         <Toast message={toast} type="success" onClose={() => setToast(null)} />
       )}
+
+      <Dialog
+        open={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        title="清除型號規格"
+        maxWidth={400}
+      >
+        <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: 14, color: '#6B6B6B', lineHeight: 1.6, marginBottom: 24 }}>
+          切換後將清除所有型號規格，此操作儲存後無法復原。確定繼續？
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setShowClearConfirm(false)}
+            style={{
+              flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 500,
+              border: '1px solid #F0EFEC', color: '#6B6B6B', background: 'none',
+              fontFamily: 'var(--font-jakarta)', cursor: 'pointer',
+            }}
+          >
+            取消
+          </button>
+          <button
+            onClick={confirmClearVariants}
+            style={{
+              flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
+              background: '#C62828', color: '#FFFFFF', border: 'none',
+              fontFamily: 'var(--font-jakarta)', cursor: 'pointer',
+            }}
+          >
+            確認清除
+          </button>
+        </div>
+      </Dialog>
 
       <PageHeader
         title="編輯商品"
@@ -205,16 +315,33 @@ export default function EditProductPage() {
             hasVariants={hasVariants}
             categories={categories}
             onChange={handleFormChange}
+            errors={fieldErrors}
           />
 
-          {hasVariants && variants.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-semibold" style={{ color: '#2D2D2D', fontFamily: 'var(--font-jakarta)' }}>
-                型號規格
-              </span>
-              <VariantTable variants={variants} onChange={setVariants} />
-            </div>
-          )}
+          {/* 型號區塊 */}
+          <div className="flex flex-col gap-4 pt-4" style={{ borderTop: '1px solid #F0EFEC' }}>
+            <VariantToggle enabled={hasVariants} onToggle={toggleVariants} />
+
+            {hasVariants && isAddingVariants && (
+              // Case B：原本無型號，正在新增型號 → 顯示 VariantBuilder
+              <VariantBuilder
+                options={options}
+                variants={variants}
+                onOptionsChange={setOptions}
+                onVariantsChange={setVariants}
+              />
+            )}
+
+            {hasVariants && !isAddingVariants && variants.length > 0 && (
+              // Case C：原本有型號，編輯既有型號 → 顯示 VariantTable
+              <div className="flex flex-col gap-2">
+                <p className="text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
+                  共 {variants.length} 個型號，售價留空表示繼承商品售價
+                </p>
+                <VariantTable variants={variants} onChange={setVariants} />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 右側欄 */}

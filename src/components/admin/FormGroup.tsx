@@ -1,9 +1,10 @@
 interface FormGroupProps {
   label: string
   children: React.ReactNode
+  error?: string
 }
 
-export function FormGroup({ label, children }: FormGroupProps) {
+export function FormGroup({ label, children, error }: FormGroupProps) {
   return (
     <div className="flex flex-col gap-[6px]">
       <label
@@ -12,7 +13,17 @@ export function FormGroup({ label, children }: FormGroupProps) {
       >
         {label}
       </label>
-      {children}
+      <div className={error ? 'field-error' : undefined}>
+        {children}
+      </div>
+      {error && (
+        <p
+          className="text-[12px]"
+          style={{ fontFamily: 'var(--font-jakarta)', color: '#D4845E', marginTop: -2 }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   )
 }

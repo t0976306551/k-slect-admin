@@ -35,10 +35,12 @@ export default function NewProductPage() {
   const [variants, setVariants] = useState<ProductVariantRow[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({})
 
   const handleFormChange = useCallback(
     <K extends keyof ProductFormValues>(field: K, value: ProductFormValues[K]) => {
       setForm(prev => ({ ...prev, [field]: value }))
+      setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n })
     },
     [],
   )
@@ -56,17 +58,24 @@ export default function NewProductPage() {
   }, [])
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) { setError('請輸入商品名稱'); return }
-    if (!form.price || Number(form.price) <= 0) { setError('請輸入有效售價'); return }
-    if (!form.categoryId) { setError('請選擇商品分類'); return }
+    const errs: Partial<Record<keyof ProductFormValues, string>> = {}
+    if (!form.name.trim()) errs.name = '請輸入商品名稱'
+    if (!form.price || Number(form.price) <= 0) errs.price = '請輸入有效售價'
+    if (!form.categoryId) errs.categoryId = '請選擇商品分類'
+    if (!hasVariants && !form.sku.trim()) errs.sku = '請輸入 SKU'
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
+      setError(null)
+      return
+    }
 
     if (hasVariants) {
       if (variants.length === 0) { setError('請先產生型號組合'); return }
       if (variants.some(v => !v.sku.trim())) { setError('請填寫所有型號的 SKU'); return }
-    } else {
-      if (!form.sku.trim()) { setError('請輸入 SKU'); return }
     }
 
+    setFieldErrors({})
     setError(null)
     setSaving(true)
 
@@ -154,6 +163,7 @@ export default function NewProductPage() {
             hasVariants={hasVariants}
             categories={categories}
             onChange={handleFormChange}
+            errors={fieldErrors}
           />
 
           {/* 型號區塊 */}
