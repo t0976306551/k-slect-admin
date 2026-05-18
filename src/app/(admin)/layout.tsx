@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { Menu } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/admin/Sidebar'
+import { NavigationProgress } from '@/components/admin/NavigationProgress'
+import { ToastProvider } from '@/contexts/ToastContext'
 
 // Auth is enforced by middleware.ts — no redirect needed here.
 export default function AdminLayout({
@@ -11,9 +14,12 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname = usePathname()
 
   return (
+    <ToastProvider>
     <div className="flex h-full min-h-screen" style={{ background: '#F7F6F3' }}>
+      <NavigationProgress />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 md:ml-[240px] min-h-screen flex flex-col">
@@ -37,10 +43,11 @@ export default function AdminLayout({
           </span>
         </header>
 
-        <main className="flex-1 overflow-auto">
+        <main key={pathname} className="flex-1 overflow-auto" style={{ animation: 'page-enter 0.22s ease both' }}>
           {children}
         </main>
       </div>
     </div>
+    </ToastProvider>
   )
 }
