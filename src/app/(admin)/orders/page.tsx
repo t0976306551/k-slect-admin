@@ -11,10 +11,12 @@ import {
   CancelOrderModal,
 } from '@/components/admin/orders'
 import type { FilterTab } from '@/components/admin/orders'
+import { SkeletonOrderTable } from '@/components/admin/SkeletonTable'
 import type { AdminOrder } from '@/types'
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [drawerOrder, setDrawerOrder] = useState<AdminOrder | null>(null)
@@ -25,6 +27,7 @@ export default function OrdersPage() {
     async function load() {
       const r = await fetchOrders()
       if (r.data) setOrders(r.data.orders)
+      setLoading(false)
     }
     load()
   }, [])
@@ -71,12 +74,16 @@ export default function OrdersPage() {
 
       <OrderSearchBar value={searchQuery} onChange={setSearchQuery} />
 
-      <OrderTable
-        orders={filtered}
-        searchQuery={searchQuery}
-        onSelectOrder={setDrawerOrder}
-        onShipOrder={setShipOrderTarget}
-      />
+      {loading ? (
+        <SkeletonOrderTable rows={8} />
+      ) : (
+        <OrderTable
+          orders={filtered}
+          searchQuery={searchQuery}
+          onSelectOrder={setDrawerOrder}
+          onShipOrder={setShipOrderTarget}
+        />
+      )}
 
       {/* Order Detail Drawer */}
       {drawerOrder && (

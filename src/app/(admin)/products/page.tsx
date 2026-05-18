@@ -6,10 +6,14 @@ import Image from 'next/image'
 import { Search, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react'
 import { fetchProducts, deleteProduct } from '@/lib/api'
 import { StatusBadge, PRODUCT_STATUS_MAP } from '@/components/admin/StatusBadge'
+import { SkeletonTable } from '@/components/admin/SkeletonTable'
+import { useToast } from '@/contexts/ToastContext'
 import type { Product } from '@/types'
 
 export default function ProductsPage() {
+  const { showToast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('全部分類')
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
@@ -19,6 +23,7 @@ export default function ProductsPage() {
     async function load() {
       const r = await fetchProducts()
       if (r.data) setProducts(r.data)
+      setLoading(false)
     }
     load()
   }, [])
@@ -30,6 +35,7 @@ export default function ProductsPage() {
     setDeleting(false)
     if (!res.error) {
       setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+      showToast('商品已刪除')
     }
     setDeleteTarget(null)
   }
@@ -54,7 +60,7 @@ export default function ProductsPage() {
         </h1>
         <Link
           href="/products/new"
-          className="flex items-center gap-[6px] px-5 py-[10px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-[6px] px-5 py-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
           style={{
             background: '#7C9070',
             borderRadius: 10,
@@ -112,7 +118,7 @@ export default function ProductsPage() {
       </div>
 
       {/* 商品表格 */}
-      <div className="overflow-x-auto rounded-[16px]" style={{ border: '1px solid #F0EFEC' }}>
+      {loading ? <SkeletonTable rows={8} /> : <div className="overflow-x-auto rounded-[16px]" style={{ border: '1px solid #F0EFEC' }}>
       <div
         className="flex flex-col min-w-[600px]"
         style={{ background: '#FFFFFF' }}
@@ -242,7 +248,7 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
-      </div>
+      </div>}
 
       {/* 刪除確認 Modal */}
       {deleteTarget && (
@@ -279,7 +285,7 @@ export default function ProductsPage() {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
                 style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
               >
                 {deleting ? '刪除中...' : '確認刪除'}
