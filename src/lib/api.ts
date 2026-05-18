@@ -115,8 +115,23 @@ export async function updateProduct(
     categoryId: string
     status: 'active' | 'inactive'
     images: string[] | null
-    inventory: { sku?: string; quantity?: number }
-    variants: Array<{ id: string; sku?: string; price?: number | null; quantity?: number; status?: 'active' | 'inactive' }>
+    // 切換為無型號：傳 inventory → 後端清除 variants/options，建立 inventory
+    inventory: { sku: string; quantity: number; lowStockThreshold?: number }
+    // 切換為有型號：傳 options + variants（無 id）→ 後端重建
+    options: Array<{
+      name: string
+      position: number
+      values: Array<{ value: string; position: number }>
+    }>
+    variants: Array<{
+      id?: string          // 有 id = 更新既有；無 id = 新建（搭配 options）
+      sku: string
+      price?: number | null
+      quantity?: number
+      lowStockThreshold?: number
+      status?: 'active' | 'inactive'
+      optionValueIndices?: number[]
+    }>
   }>,
 ): Promise<ApiResponse<Product>> {
   if (USE_MOCK) return mockUpdateProduct(id, data)
