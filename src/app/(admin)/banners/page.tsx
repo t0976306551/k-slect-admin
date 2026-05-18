@@ -104,7 +104,7 @@ export default function BannersPage() {
         </h1>
         <button
           onClick={openCreate}
-          className="flex items-center gap-[6px] px-5 py-[10px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-[6px] px-5 py-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
           style={{ background: '#7C9070', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
         >
           <Plus size={16} color="#FFFFFF" />

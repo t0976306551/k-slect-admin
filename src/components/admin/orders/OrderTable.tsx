@@ -12,7 +12,7 @@ function ActionButton({ order, onShipOrder }: ActionButtonProps) {
   if (order.status === 'pending_ship') {
     return (
       <button
-        className="px-3 py-[6px] text-[11px] font-semibold rounded-[8px] transition-opacity hover:opacity-80"
+        className="px-3 py-[6px] text-[11px] font-semibold rounded-[8px] transition-all hover:opacity-80 active:scale-[0.96]"
         style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
         onClick={(e) => { e.stopPropagation(); onShipOrder(order) }}
       >

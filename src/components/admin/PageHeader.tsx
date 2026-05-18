@@ -18,7 +18,7 @@ export function PageHeader({ title, saving, saveLabel = '儲存', onCancel, onSa
       <div className="flex items-center gap-3">
         <button
           onClick={onCancel}
-          className="px-5 py-[10px] text-[13px] font-medium rounded-[10px] transition-colors hover:bg-gray-50"
+          className="px-5 py-[10px] text-[13px] font-medium rounded-[10px] transition-all hover:bg-gray-50 active:scale-[0.96]"
           style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
         >
           取消
@@ -26,7 +26,7 @@ export function PageHeader({ title, saving, saveLabel = '儲存', onCancel, onSa
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+          className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
           style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
         >
           {saving ? '儲存中...' : saveLabel}

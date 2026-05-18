@@ -238,7 +238,7 @@ export default function CategoriesPage() {
         </h1>
         <button
           onClick={openCreate}
-          className="flex items-center gap-[6px] px-5 py-[10px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-[6px] px-5 py-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
           style={{
             background: '#7C9070',
             borderRadius: 10,
@@ -379,7 +379,7 @@ export default function CategoriesPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
                 style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
               >
                 {saving ? '儲存中...' : '儲存'}
@@ -429,7 +429,7 @@ export default function CategoriesPage() {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+                className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
                 style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
               >
                 {deleting ? '刪除中...' : '確認刪除'}

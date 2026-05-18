@@ -111,7 +111,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSaveSettings}
               disabled={settingsSaving}
-              className="mt-2 px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+              className="mt-2 px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
               style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
             >
               {settingsSaving ? '儲存中...' : '儲存設定'}
@@ -155,7 +155,7 @@ export default function SettingsPage() {
             <button
               onClick={handleChangePassword}
               disabled={pwdSaving}
-              className="mt-2 px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+              className="mt-2 px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
               style={{ background: '#2D2D2D', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
             >
               {pwdSaving ? '更新中...' : '更新密碼'}

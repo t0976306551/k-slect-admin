@@ -93,7 +93,7 @@ export function VariantBuilder({ options, variants, onOptionsChange, onVariantsC
           <button
             type="button"
             onClick={handleGenerate}
-            className="flex items-center gap-1.5 px-4 py-[9px] text-[13px] font-semibold rounded-[8px] transition-opacity hover:opacity-80"
+            className="flex items-center gap-1.5 px-4 py-[9px] text-[13px] font-semibold rounded-[8px] transition-all hover:opacity-80 active:scale-[0.96]"
             style={{
               background: isDirty ? '#7C9070' : '#F7F6F3',
               color: isDirty ? '#FFFFFF' : '#6B6B6B',

@@ -206,7 +206,7 @@ export function OrderDetailDrawer({
             style={{ borderTop: '1px solid #F0EFEC' }}
           >
             <button
-              className="flex-1 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80"
+              className="flex-1 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
               style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
               onClick={() => onShipOrder(order)}
             >

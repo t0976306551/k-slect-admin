@@ -72,14 +72,14 @@ export function CancelOrderModal({ order, onConfirm, onClose }: CancelOrderModal
 
         <div className="flex gap-3">
           <button
-            className="flex-1 py-[10px] text-[13px] font-medium rounded-[10px] transition-opacity hover:opacity-80"
+            className="flex-1 py-[10px] text-[13px] font-medium rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
             style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
             onClick={onClose}
           >
             返回
           </button>
           <button
-            className="flex-1 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="flex-1 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50"
             style={{ background: '#C62828', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
             onClick={handleConfirm}
             disabled={loading}
