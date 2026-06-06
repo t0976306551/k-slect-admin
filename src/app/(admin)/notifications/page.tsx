@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -55,7 +55,7 @@ export default function NotificationsPage() {
   }, [])
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -112,3 +112,4 @@ export default function NotificationsPage() {
     </div>
   )
 }
+

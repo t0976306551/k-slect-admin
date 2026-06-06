@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { fetchRefunds, updateRefund } from '@/lib/api'
@@ -27,7 +27,7 @@ export default function ReturnsPage() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -103,3 +103,4 @@ export default function ReturnsPage() {
     </div>
   )
 }
+

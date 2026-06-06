@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { fetchProducts, fetchOrders, fetchMembers } from '@/lib/api'
@@ -72,7 +72,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <h1
         className="text-[28px] font-medium tracking-[-0.5px]"
         style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
@@ -150,3 +150,4 @@ export default function ReportsPage() {
     </div>
   )
 }
+

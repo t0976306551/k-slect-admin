@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 interface DialogProps {
   open: boolean
@@ -32,20 +33,7 @@ export function Dialog({ open, onClose, title, children, maxWidth = 440 }: Dialo
     }
   }, [open])
 
-  const handleEsc = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
-
-  useEffect(() => {
-    if (open) {
-      document.addEventListener('keydown', handleEsc)
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEsc)
-      document.body.style.overflow = ''
-    }
-  }, [open, handleEsc])
+  useBodyScrollLock(open)
 
   if (!mounted) return null
 
@@ -63,7 +51,6 @@ export function Dialog({ open, onClose, title, children, maxWidth = 440 }: Dialo
         backdropFilter: visible ? 'blur(2px)' : 'blur(0px)',
         transition: 'background-color 0.22s ease, backdrop-filter 0.22s ease',
       }}
-      onClick={onClose}
     >
       <div
         role="dialog"

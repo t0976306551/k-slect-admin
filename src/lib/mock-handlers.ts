@@ -219,7 +219,7 @@ export async function mockFetchRefunds(): Promise<ApiResponse<RefundRequest[]>> 
   return { data: mockRefunds, error: null }
 }
 
-export async function mockFetchBanners(): Promise<ApiResponse<Banner[]>> {
+async function mockFetchBanners(): Promise<ApiResponse<Banner[]>> {
   return { data: mockBanners, error: null }
 }
 

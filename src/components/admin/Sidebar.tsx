@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   Package,
   FolderOpen,
+  ClipboardList,
   Settings,
   LogOut,
 } from 'lucide-react'
@@ -19,8 +20,7 @@ const navItems: NavItem[] = [
   // { label: '儀表板', href: '/dashboard', icon: LayoutDashboard },
   { label: '商品管理', href: '/products', icon: Package },
   { label: '商品分類', href: '/categories', icon: FolderOpen },
-  // DISABLED: 前台已移除購物/結帳/會員功能
-  // { label: '訂單管理', href: '/orders', icon: ClipboardList },
+  { label: '訂單管理', href: '/orders', icon: ClipboardList },
   // { label: '出貨管理', href: '/shipping', icon: Truck },
   // { label: '退款管理', href: '/returns', icon: Undo2 },
   // { label: '折扣活動', href: '/discounts', icon: Tag },
@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {isOpen && (
         <div
           className="fixed inset-0 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.4)', zIndex: 45 }}
+          style={{ background: 'rgba(0,0,0,0.4)', zIndex: 45, animation: 'fade-in 0.2s ease both' }}
           onClick={onClose}
         />
       )}
@@ -101,7 +101,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div key={item.href}>
               <Link
                 href={item.href}
-                className="flex items-center gap-[10px] mx-2 px-3 py-[10px] rounded-[8px] transition-colors"
+                className="flex items-center gap-[10px] mx-2 px-3 py-[10px] rounded-[8px] transition-all duration-200 hover:bg-[#F0EFEC] active:scale-[0.98]"
                 style={{
                   background: active ? '#7C907025' : 'transparent',
                   color: active ? '#7C9070' : '#6B6B6B',

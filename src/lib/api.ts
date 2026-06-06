@@ -199,6 +199,66 @@ export async function updateOrder(
   return request(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
 }
 
+export async function editOrder(
+  id: string,
+  data: {
+    customerName?: string
+    customerPhone?: string
+    customerEmail?: string
+    shippingMethod?: 'home_delivery' | 'cvs_pickup'
+    shippingAddress?: string
+    cvsStoreName?: string
+    cvsStoreAddress?: string
+    shippingFee?: number
+    paymentMethod?: 'seller_ship' | 'bank_transfer'
+    paymentStatus?: 'pending' | 'paid' | 'failed'
+    trackingNo?: string
+    depositPaid?: boolean
+    depositAmount?: number
+    note?: string
+    status?: string
+  },
+): Promise<ApiResponse<AdminOrder>> {
+  return request(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function createOrder(data: {
+  customerId?: string
+  customerName: string
+  customerPhone: string
+  customerEmail?: string
+  shippingAddress?: string
+  shippingMethod?: 'home_delivery' | 'cvs_pickup'
+  shippingProvider?: string
+  cvsStoreName?: string
+  cvsStoreAddress?: string
+  shippingFee?: number
+  paymentMethod: 'seller_ship' | 'bank_transfer'
+  paymentStatus: 'pending' | 'paid' | 'failed'
+  depositPaid?: boolean
+  depositAmount?: number
+  items: Array<{
+    productId?: string
+    productName: string
+    sku?: string
+    quantity: number
+    priceAtOrder: number
+    image?: string
+    variantSnapshot?: Record<string, string>
+  }>
+  note?: string
+}): Promise<ApiResponse<AdminOrder>> {
+  return request('/orders', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function deleteOrder(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/orders/${id}`, { method: 'DELETE' })
+}
+
+export async function searchCustomers(q: string): Promise<ApiResponse<import('../types').Customer[]>> {
+  return request(`/members?q=${encodeURIComponent(q)}`)
+}
+
 // --- Inventory ---
 export async function fetchInventory(params?: {
   lowStock?: boolean

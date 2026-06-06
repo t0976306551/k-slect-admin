@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { fetchDashboardStats, fetchOrders } from '@/lib/api'
 import { StatusBadge, ORDER_STATUS_MAP } from '@/components/admin/StatusBadge'
 
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
@@ -212,3 +212,4 @@ export default async function DashboardPage() {
     </div>
   )
 }
+

@@ -1,13 +1,15 @@
-import { X } from 'lucide-react'
+import Link from 'next/link'
+import { X, Pencil, Trash2 } from 'lucide-react'
 import { ORDER_STATUS_MAP, StatusBadge } from '@/components/admin/StatusBadge'
 import { InfoRow } from '@/components/admin/InfoRow'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import type { AdminOrder } from '@/types'
 
 interface OrderDetailDrawerProps {
   order: AdminOrder
   onClose: () => void
   onShipOrder: (order: AdminOrder) => void
-  onCancelOrder: (order: AdminOrder) => void
+  onDeleteOrder: (order: AdminOrder) => void
 }
 
 // --- 區塊標題 ---
@@ -99,17 +101,24 @@ export function OrderDetailDrawer({
   order,
   onClose,
   onShipOrder,
-  onCancelOrder,
+  onDeleteOrder,
 }: OrderDetailDrawerProps) {
-  const showFooter = order.status === 'pending_ship'
+  useBodyScrollLock(true)
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/30" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-40 bg-black/30"
+        style={{ animation: 'fade-in 0.2s ease both' }}
+      />
 
       <div
         className="fixed right-0 top-0 h-full z-50 flex flex-col overflow-hidden w-full sm:w-[480px]"
-        style={{ background: '#FFFFFF', boxShadow: '-4px 0 24px rgba(0,0,0,0.08)' }}
+        style={{
+          background: '#FFFFFF',
+          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
+          animation: 'slide-in-right 0.3s cubic-bezier(0.25,1,0.5,1) both',
+        }}
       >
         {/* Header */}
         <div
@@ -125,13 +134,23 @@ export function OrderDetailDrawer({
             </span>
             <StatusBadge status={order.status} map={ORDER_STATUS_MAP} sizeClass="text-[10px]" />
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100"
-            style={{ color: '#6B6B6B' }}
-          >
-            <X size={14} />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/orders/${order.id}/edit`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-colors hover:bg-[#F0F4EE]"
+              style={{ fontFamily: 'var(--font-jakarta)', color: '#7C9070', border: '1px solid #C8D9C2' }}
+            >
+              <Pencil size={12} />
+              編輯
+            </Link>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+              style={{ color: '#6B6B6B' }}
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Content */}
@@ -140,7 +159,7 @@ export function OrderDetailDrawer({
             <SectionTitle>顧客資訊</SectionTitle>
             <SectionCard>
               <InfoRow label="姓名" value={order.customerName} />
-              <InfoRow label="Email" value={order.customerEmail} />
+              <InfoRow label="Email" value={order.customerEmail ?? '—'} />
               <InfoRow label="電話" value={order.customerPhone || '\u2014'} />
             </SectionCard>
           </section>
@@ -200,27 +219,28 @@ export function OrderDetailDrawer({
         </div>
 
         {/* Sticky Footer */}
-        {showFooter && (
-          <div
-            className="shrink-0 px-6 py-4 flex gap-3"
-            style={{ borderTop: '1px solid #F0EFEC' }}
-          >
+        <div
+          className="shrink-0 px-6 py-4 flex flex-col gap-2.5"
+          style={{ borderTop: '1px solid #F0EFEC' }}
+        >
+          {order.status === 'pending_ship' && (
             <button
-              className="flex-1 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
+              className="w-full py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
               style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
               onClick={() => onShipOrder(order)}
             >
               安排出貨
             </button>
-            <button
-              className="flex-1 py-[10px] text-[13px] font-medium rounded-[10px] transition-colors hover:bg-gray-50"
-              style={{ border: '1px solid #F0EFEC', color: '#6B6B6B', fontFamily: 'var(--font-jakarta)' }}
-              onClick={() => onCancelOrder(order)}
-            >
-              取消訂單
-            </button>
-          </div>
-        )}
+          )}
+          <button
+            onClick={() => onDeleteOrder(order)}
+            className="flex items-center justify-center gap-1.5 w-full py-[9px] rounded-[10px] text-[12px] font-medium transition-colors hover:bg-[#FEE2E2]"
+            style={{ border: '1px solid #FECACA', color: '#991B1B', fontFamily: 'var(--font-jakarta)' }}
+          >
+            <Trash2 size={13} />
+            刪除訂單
+          </button>
+        </div>
       </div>
     </>
   )

@@ -143,7 +143,6 @@ export default function EditProductPage() {
   const handleSubmit = async () => {
     const errs: Partial<Record<keyof ProductFormValues, string>> = {}
     if (!form.name.trim()) errs.name = '請輸入商品名稱'
-    if (!hasVariants && !form.sku.trim()) errs.sku = '請輸入 SKU'
     if (!form.price || Number(form.price) <= 0) errs.price = '請輸入有效售價'
     if (!form.categoryId) errs.categoryId = '請選擇商品分類'
 
@@ -155,7 +154,6 @@ export default function EditProductPage() {
 
     if (hasVariants && isAddingVariants) {
       if (variants.length === 0) { setError('請先產生型號組合'); return }
-      if (variants.some(v => !v.sku.trim())) { setError('請填寫所有型號的 SKU'); return }
     }
 
     setFieldErrors({})
@@ -249,7 +247,7 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       {toast && (
         <Toast message={toast} type="success" onClose={() => setToast(null)} />
       )}
@@ -297,10 +295,10 @@ export default function EditProductPage() {
 
       {error && <ErrorBanner message={error} />}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 主要資訊 */}
         <div
-          className="col-span-2 flex flex-col gap-5 p-6"
+          className="md:col-span-2 flex flex-col gap-5 p-6"
           style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EFEC' }}
         >
           <h2

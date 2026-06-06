@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -19,7 +19,7 @@ export default function DiscountsPage() {
   }, [])
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -80,3 +80,4 @@ export default function DiscountsPage() {
     </div>
   )
 }
+

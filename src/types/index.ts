@@ -139,7 +139,7 @@ export type CustomerStatus = 'active' | 'inactive' | 'blacklisted' | 'vip'
 export interface Customer {
   id: string
   name: string
-  email: string
+  email: string | null
   phone: string | null
   address: string | null
   tags: string[]
@@ -182,9 +182,12 @@ export interface Order {
   orderNo: string
   customerId: string
   customerName: string
-  customerEmail: string
+  customerEmail: string | null
   customerPhone: string
-  shippingAddress: string
+  shippingAddress: string | null
+  shippingFee: number
+  depositPaid: boolean
+  depositAmount: number
   trackingNo: string | null
   customer?: Customer
   status: OrderStatus

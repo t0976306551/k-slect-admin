@@ -46,12 +46,13 @@ export default function LoginPage() {
       }}
     >
       <div
-        className="w-[440px] flex flex-col gap-8"
+        className="w-full max-w-[440px] flex flex-col gap-8 mx-4"
         style={{
           background: '#FFFFFF',
           borderRadius: 20,
-          padding: 48,
+          padding: 'clamp(24px, 5vw, 48px)',
           boxShadow: '0 8px 40px rgba(0,0,0,0.07)',
+          animation: 'scale-in 0.3s cubic-bezier(0.34,1.3,0.64,1) both',
         }}
       >
         {/* Logo */}
@@ -177,7 +178,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center transition-opacity"
+            className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98]"
             style={{
               background: '#7C9070',
               borderRadius: 10,
