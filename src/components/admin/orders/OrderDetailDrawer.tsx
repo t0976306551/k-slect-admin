@@ -1,0 +1,247 @@
+import Link from 'next/link'
+import { X, Pencil, Trash2 } from 'lucide-react'
+import { ORDER_STATUS_MAP, StatusBadge } from '@/components/admin/StatusBadge'
+import { InfoRow } from '@/components/admin/InfoRow'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import type { AdminOrder } from '@/types'
+
+interface OrderDetailDrawerProps {
+  order: AdminOrder
+  onClose: () => void
+  onShipOrder: (order: AdminOrder) => void
+  onDeleteOrder: (order: AdminOrder) => void
+}
+
+// --- 區塊標題 ---
+
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <h2
+      className="text-[13px] font-medium mb-3"
+      style={{ fontFamily: 'var(--font-fraunces)', color: '#2D2D2D' }}
+    >
+      {children}
+    </h2>
+  )
+}
+
+// --- 區塊容器 ---
+
+function SectionCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="rounded-[12px] p-4 flex flex-col gap-2"
+      style={{ background: '#F7F6F3', border: '1px solid #F0EFEC' }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// --- 商品清單表格 ---
+
+function ItemsTable({ items }: { items: AdminOrder['items'] }) {
+  return (
+    <div
+      className="rounded-[12px] overflow-x-auto"
+      style={{ border: '1px solid #F0EFEC' }}
+    >
+      <div
+        className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-2 min-w-[350px]"
+        style={{ background: '#FAFAF8', borderBottom: '1px solid #F0EFEC' }}
+      >
+        {['商品', '數量', '單價', '小計'].map(h => (
+          <span
+            key={h}
+            className="text-[11px] font-semibold"
+            style={{ fontFamily: 'var(--font-jakarta)', color: '#8E8E93' }}
+          >
+            {h}
+          </span>
+        ))}
+      </div>
+      {items.map((item, idx) => (
+        <div
+          key={idx}
+          className="grid grid-cols-[1fr_60px_60px_72px] px-4 py-3 items-start min-w-[350px]"
+          style={{ borderBottom: idx < items.length - 1 ? '1px solid #F0EFEC' : 'none' }}
+        >
+          <div className="flex flex-col gap-[2px]">
+            <span
+              className="text-[12px] font-medium leading-snug"
+              style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
+            >
+              {item.productName}
+            </span>
+            <span
+              className="text-[11px]"
+              style={{ fontFamily: 'var(--font-space-mono)', color: '#8E8E93' }}
+            >
+              {item.sku}
+            </span>
+          </div>
+          <span className="text-[12px]" style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}>
+            {item.quantity}
+          </span>
+          <span className="text-[12px]" style={{ fontFamily: 'var(--font-space-mono)', color: '#6B6B6B' }}>
+            {item.priceAtOrder.toLocaleString()}
+          </span>
+          <span className="text-[12px] font-medium" style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}>
+            {(item.priceAtOrder * item.quantity).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// --- OrderDetailDrawer ---
+
+export function OrderDetailDrawer({
+  order,
+  onClose,
+  onShipOrder,
+  onDeleteOrder,
+}: OrderDetailDrawerProps) {
+  useBodyScrollLock(true)
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-black/30"
+        style={{ animation: 'fade-in 0.2s ease both' }}
+      />
+
+      <div
+        className="fixed right-0 top-0 h-full z-50 flex flex-col overflow-hidden w-full sm:w-[480px]"
+        style={{
+          background: '#FFFFFF',
+          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
+          animation: 'slide-in-right 0.3s cubic-bezier(0.25,1,0.5,1) both',
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 py-4 shrink-0"
+          style={{ borderBottom: '1px solid #F0EFEC' }}
+        >
+          <div className="flex items-center gap-3">
+            <span
+              className="text-[15px] font-medium"
+              style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}
+            >
+              {order.orderNo}
+            </span>
+            <StatusBadge status={order.status} map={ORDER_STATUS_MAP} sizeClass="text-[10px]" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/orders/${order.id}/edit`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-colors hover:bg-[#F0F4EE]"
+              style={{ fontFamily: 'var(--font-jakarta)', color: '#7C9070', border: '1px solid #C8D9C2' }}
+            >
+              <Pencil size={12} />
+              編輯
+            </Link>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+              style={{ color: '#6B6B6B' }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+          <section>
+            <SectionTitle>顧客資訊</SectionTitle>
+            <SectionCard>
+              <InfoRow label="姓名" value={order.customerName} />
+              <InfoRow label="Email" value={order.customerEmail ?? '—'} />
+              <InfoRow label="電話" value={order.customerPhone || '\u2014'} />
+            </SectionCard>
+          </section>
+
+          <section>
+            <SectionTitle>物流資訊</SectionTitle>
+            <SectionCard>
+              <InfoRow label="取貨門市" value={order.cvsStoreCode ?? '\u2014'} mono />
+              {order.cvsPickupCode && (
+                <InfoRow label="取件代碼" value={order.cvsPickupCode} mono />
+              )}
+            </SectionCard>
+          </section>
+
+          <section>
+            <SectionTitle>商品清單</SectionTitle>
+            <ItemsTable items={order.items} />
+          </section>
+
+          <section>
+            <SectionTitle>付款資訊</SectionTitle>
+            <SectionCard>
+              <InfoRow label="付款方式" value="取貨付款" />
+              <div className="flex items-center justify-between pt-2 mt-1" style={{ borderTop: '1px solid #F0EFEC' }}>
+                <span
+                  className="text-[13px] font-semibold"
+                  style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}
+                >
+                  總金額
+                </span>
+                <span
+                  className="text-[16px] font-semibold"
+                  style={{ fontFamily: 'var(--font-space-mono)', color: '#2D2D2D' }}
+                >
+                  NT$ {order.totalAmount.toLocaleString()}
+                </span>
+              </div>
+            </SectionCard>
+          </section>
+
+          {order.note && (
+            <section>
+              <SectionTitle>備註</SectionTitle>
+              <div
+                className="rounded-[12px] p-4"
+                style={{ background: '#F7F6F3', border: '1px solid #F0EFEC' }}
+              >
+                <p
+                  className="text-[13px] leading-relaxed"
+                  style={{ fontFamily: 'var(--font-jakarta)', color: '#6B6B6B' }}
+                >
+                  {order.note}
+                </p>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Sticky Footer */}
+        <div
+          className="shrink-0 px-6 py-4 flex flex-col gap-2.5"
+          style={{ borderTop: '1px solid #F0EFEC' }}
+        >
+          {order.status === 'pending_ship' && (
+            <button
+              className="w-full py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
+              style={{ background: '#D4845E', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
+              onClick={() => onShipOrder(order)}
+            >
+              安排出貨
+            </button>
+          )}
+          <button
+            onClick={() => onDeleteOrder(order)}
+            className="flex items-center justify-center gap-1.5 w-full py-[9px] rounded-[10px] text-[12px] font-medium transition-colors hover:bg-[#FEE2E2]"
+            style={{ border: '1px solid #FECACA', color: '#991B1B', fontFamily: 'var(--font-jakarta)' }}
+          >
+            <Trash2 size={13} />
+            刪除訂單
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}

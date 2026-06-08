@@ -16,7 +16,7 @@ export function OptionRow({ option, onChange, onDelete }: Props) {
         value={option.name}
         onChange={e => onChange({ ...option, name: e.target.value })}
         placeholder="維度（如：顏色）"
-        className="outline-none text-[13px] shrink-0"
+        className="admin-input text-[13px] shrink-0"
         style={{
           background: '#F7F6F3',
           borderRadius: 8,

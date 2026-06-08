@@ -20,8 +20,89 @@
   --font-ui: var(--font-inter);
 }
 
+@keyframes page-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #F0EFEC 25%, #E4E2DD 50%, #F0EFEC 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── 統一輸入框 focus ring ──────────────────────────────────────────────── */
+.admin-input {
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.admin-input:focus {
+  box-shadow: 0 0 0 3px rgba(124, 144, 112, 0.18);
+  border-color: #7C9070 !important;
+  outline: none;
+}
+
+/* ─── 欄位錯誤狀態 ───────────────────────────────────────────────────────── */
+.field-error .admin-input {
+  border-color: #D4845E !important;
+}
+.field-error .admin-input:focus {
+  box-shadow: 0 0 0 3px rgba(212, 132, 94, 0.15);
+  border-color: #D4845E !important;
+}
+
 * {
   box-sizing: border-box;
+}
+
+button, [role="button"] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 html,

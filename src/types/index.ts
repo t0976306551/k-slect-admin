@@ -4,6 +4,28 @@ export type ApiResponse<T> =
   | { data: T; error: null }
   | { data: null; error: { code: string; message: string } }
 
+// --- Shipping / Logistics ---
+export type ShippingMethod = 'cvs_pickup' | 'home_delivery'
+export type ShippingProvider = 'seven_eleven' | 'family_mart' | 'black_cat'
+
+// --- Bank Transfer ---
+export interface BankTransferSnapshot {
+  bankName: string
+  bankCode: string
+  branchName: string
+  accountName: string
+  accountNumber: string
+  paymentDeadlineHours: number
+}
+
+export interface BankTransferReport {
+  orderId: string
+  last5: string
+  transferredAt: string | null
+  note: string | null
+  reportedAt: string
+}
+
 // --- Category ---
 export interface Category {
   id: string
@@ -51,6 +73,7 @@ export interface ProductOption {
 
 export interface ProductVariant {
   id: string
+  productId: string   // TypeORM Entity FK，API 回傳時一定存在
   sku: string
   price: number | null
   quantity: number
@@ -77,7 +100,7 @@ export interface Product {
   origin: string | null
   category?: Pick<Category, 'id' | 'name' | 'slug'>
   inventory?: Pick<Inventory, 'sku' | 'quantity' | 'lowStockThreshold'>
-  images: string[] // 商品圖片 URL 陣列
+  images: string[] | null // 商品圖片 URL 陣列（Entity jsonb nullable）
   options?: ProductOption[]
   variants?: ProductVariant[]
   createdAt: string
@@ -111,13 +134,18 @@ export interface ProductVariantRow {
 }
 
 // --- Customer ---
+export type CustomerStatus = 'active' | 'inactive' | 'blacklisted' | 'vip'
+
 export interface Customer {
   id: string
   name: string
-  email: string
+  email: string | null
   phone: string | null
   address: string | null
-  status: 'active' | 'inactive'
+  tags: string[]
+  note: string | null
+  status: CustomerStatus
+  _count?: { orders: number }  // TypeORM 聚合，API 回傳時可能包含
   createdAt: string
   updatedAt: string
 }
@@ -132,6 +160,7 @@ export interface OrderItem {
   quantity: number
   priceAtOrder: number   // 下單當下價格快照
   image: string | null
+  variantSnapshot: Record<string, string> | null  // {"顏色":"紅色","尺寸":"M"}
   createdAt: string
   updatedAt: string
 }
@@ -150,7 +179,16 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed'
 
 export interface Order {
   id: string
+  orderNo: string
   customerId: string
+  customerName: string
+  customerEmail: string | null
+  customerPhone: string
+  shippingAddress: string | null
+  shippingFee: number
+  depositPaid: boolean
+  depositAmount: number
+  trackingNo: string | null
   customer?: Customer
   status: OrderStatus
   paymentMethod: PaymentMethod
@@ -158,6 +196,19 @@ export interface Order {
   totalAmount: number     // 台幣，整數
   note: string | null
   items?: OrderItem[]
+  // 物流
+  shippingMethod: ShippingMethod | null
+  shippingProvider: ShippingProvider | null
+  cvsStoreCode: string | null
+  cvsStoreName: string | null
+  cvsStoreAddress: string | null
+  cvsBrand: string | null
+  cvsPickupCode: string | null
+  // 付款
+  bankTransferInfoSnapshot: BankTransferSnapshot | null
+  bankTransferReport: BankTransferReport | null
+  paymentDueAt: string | null
+  paidAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -186,36 +237,16 @@ export interface Promotion {
 
 // 後台 OrderItem 快照（RefundRequest 等 jsonb 欄位用）
 export interface AdminOrderItem {
-  productId: string
-  productName: string    // 下單時商品名稱快照
-  sku: string            // 下單時 SKU 快照
+  productId: string | null  // Entity nullable（商品刪除後為 null）
+  productName: string       // 下單時商品名稱快照
+  sku: string               // 下單時 SKU 快照
   quantity: number
-  priceAtOrder: number   // 下單當下價格快照
-  image?: string
+  priceAtOrder: number      // 下單當下價格快照
+  image: string | null
 }
 
-// 後台 Order（含展開的顧客資訊與訂單編號）
-export interface AdminOrder {
-  id: string
-  orderNo: string          // 訂單編號，如 ORD-20260318-001
-  customerId: string
-  customerName: string
-  customerEmail: string
-  customerPhone: string
-  shippingAddress: string
-  trackingNo?: string
-  cvsBrand?: string       // 超商品牌（如 7-11）
-  cvsStoreCode?: string   // 超商門市代碼
-  cvsPickupCode?: string  // 取件代碼（便利購 API 回傳）
-  items: AdminOrderItem[]
-  totalAmount: number
-  paymentMethod: PaymentMethod
-  paymentStatus: PaymentStatus
-  status: OrderStatus
-  note?: string | null
-  createdAt: string
-  updatedAt: string
-}
+// 後台 Order（完整訂單，items 為必填）
+export type AdminOrder = Omit<Order, 'items'> & { items: OrderItem[] }
 
 // 會員（Customer 的後台統計擴充）
 export interface Member {
@@ -226,7 +257,7 @@ export interface Member {
   totalOrders: number
   totalSpent: number
   createdAt: string
-  status: 'active' | 'inactive'
+  status: CustomerStatus
 }
 
 export interface Discount {
@@ -235,8 +266,8 @@ export interface Discount {
   code: string
   type: 'percentage' | 'fixed'
   value: number
-  minAmount?: number
-  usageLimit?: number
+  minAmount: number | null    // Entity nullable
+  usageLimit: number | null   // Entity nullable
   usedCount: number
   startDate: string
   endDate: string
@@ -282,6 +313,7 @@ export interface Notification {
   sentAt?: string
   scheduledAt?: string
   createdAt: string
+  updatedAt: string
 }
 
 // --- Permission ---

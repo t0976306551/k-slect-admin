@@ -13,7 +13,6 @@ import {
   mockFetchDiscounts,
   mockCreateDiscount,
   mockFetchRefunds,
-  mockFetchBanners,
   mockFetchNotifications,
   mockCreateNotification,
   mockFetchDashboardStats,
@@ -43,6 +42,17 @@ async function request<T>(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   })
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' })
+      } catch (err) {
+        console.error('登出請求失敗', err)
+      }
+      window.location.href = '/login'
+    }
+    return { data: null, error: { code: 'UNAUTHORIZED', message: '登入已過期，請重新登入' } }
+  }
   return res.json() as Promise<ApiResponse<T>>
 }
 
@@ -58,7 +68,9 @@ export async function fetchProducts(params?: {
   if (params?.q) query.set('q', params.q)
   if (params?.status) query.set('status', params.status)
   const qs = query.toString()
-  return request(`/products${qs ? `?${qs}` : ''}`)
+  const res = await request<{ products: Product[]; total: number }>(`/products${qs ? `?${qs}` : ''}`)
+  if (res.error) return { data: null, error: res.error }
+  return { data: res.data?.products ?? [], error: null }
 }
 
 export async function fetchProduct(id: string): Promise<ApiResponse<Product>> {
@@ -72,6 +84,7 @@ export async function createProduct(data: {
   price: number
   categoryId: string
   status?: 'active' | 'inactive'
+  images?: string[]
   inventory?: { sku: string; quantity: number; lowStockThreshold?: number }
   options?: Array<{
     name: string
@@ -101,7 +114,24 @@ export async function updateProduct(
     originalPrice: number | null
     categoryId: string
     status: 'active' | 'inactive'
-    inventory: { sku?: string; quantity?: number }
+    images: string[] | null
+    // 切換為無型號：傳 inventory → 後端清除 variants/options，建立 inventory
+    inventory: { sku: string; quantity: number; lowStockThreshold?: number }
+    // 切換為有型號：傳 options + variants（無 id）→ 後端重建
+    options: Array<{
+      name: string
+      position: number
+      values: Array<{ value: string; position: number }>
+    }>
+    variants: Array<{
+      id?: string          // 有 id = 更新既有；無 id = 新建（搭配 options）
+      sku: string
+      price?: number | null
+      quantity?: number
+      lowStockThreshold?: number
+      status?: 'active' | 'inactive'
+      optionValueIndices?: number[]
+    }>
   }>,
 ): Promise<ApiResponse<Product>> {
   if (USE_MOCK) return mockUpdateProduct(id, data)
@@ -167,6 +197,66 @@ export async function updateOrder(
 ): Promise<ApiResponse<AdminOrder>> {
   if (USE_MOCK) return mockUpdateOrder(id, data)
   return request(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function editOrder(
+  id: string,
+  data: {
+    customerName?: string
+    customerPhone?: string
+    customerEmail?: string
+    shippingMethod?: 'home_delivery' | 'cvs_pickup'
+    shippingAddress?: string
+    cvsStoreName?: string
+    cvsStoreAddress?: string
+    shippingFee?: number
+    paymentMethod?: 'seller_ship' | 'bank_transfer'
+    paymentStatus?: 'pending' | 'paid' | 'failed'
+    trackingNo?: string
+    depositPaid?: boolean
+    depositAmount?: number
+    note?: string
+    status?: string
+  },
+): Promise<ApiResponse<AdminOrder>> {
+  return request(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+export async function createOrder(data: {
+  customerId?: string
+  customerName: string
+  customerPhone: string
+  customerEmail?: string
+  shippingAddress?: string
+  shippingMethod?: 'home_delivery' | 'cvs_pickup'
+  shippingProvider?: string
+  cvsStoreName?: string
+  cvsStoreAddress?: string
+  shippingFee?: number
+  paymentMethod: 'seller_ship' | 'bank_transfer'
+  paymentStatus: 'pending' | 'paid' | 'failed'
+  depositPaid?: boolean
+  depositAmount?: number
+  items: Array<{
+    productId?: string
+    productName: string
+    sku?: string
+    quantity: number
+    priceAtOrder: number
+    image?: string
+    variantSnapshot?: Record<string, string>
+  }>
+  note?: string
+}): Promise<ApiResponse<AdminOrder>> {
+  return request('/orders', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export async function deleteOrder(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request(`/orders/${id}`, { method: 'DELETE' })
+}
+
+export async function searchCustomers(q: string): Promise<ApiResponse<import('../types').Customer[]>> {
+  return request(`/members?q=${encodeURIComponent(q)}`)
 }
 
 // --- Inventory ---
@@ -253,7 +343,6 @@ export async function updateRefund(
 
 // --- Banners ---
 export async function fetchBanners(): Promise<ApiResponse<Banner[]>> {
-  if (USE_MOCK) return mockFetchBanners()
   return request('/banners')
 }
 
@@ -378,8 +467,16 @@ export async function updateSettings(
   return request('/settings', { method: 'PATCH', body: JSON.stringify(data) })
 }
 
+// --- Auth ---
+export async function changePassword(data: {
+  currentPassword: string
+  newPassword: string
+}): Promise<ApiResponse<{ message: string }>> {
+  return request('/auth/change-password', { method: 'POST', body: JSON.stringify(data) })
+}
+
 // --- Upload ---
-export async function uploadFile(file: File): Promise<ApiResponse<{ url: string; filename: string; size: number }>> {
+export async function uploadFile(file: File): Promise<ApiResponse<{ url: string; filename: string; size: number; id: string }>> {
   const token = getAuthToken()
   const formData = new FormData()
   formData.append('file', file)
@@ -388,5 +485,5 @@ export async function uploadFile(file: File): Promise<ApiResponse<{ url: string;
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   })
-  return res.json() as Promise<ApiResponse<{ url: string; filename: string; size: number }>>
+  return res.json() as Promise<ApiResponse<{ url: string; filename: string; size: number; id: string }>>
 }

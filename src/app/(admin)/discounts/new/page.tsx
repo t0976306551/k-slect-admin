@@ -1,23 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { createDiscount } from '@/lib/api'
-
-const inputStyle = {
-  background: '#F7F6F3',
-  borderRadius: 8,
-  border: '1px solid #F0EFEC',
-  height: 40,
-  fontFamily: 'var(--font-jakarta)',
-  color: '#2D2D2D',
-  fontSize: 13,
-  paddingLeft: 12,
-  paddingRight: 12,
-  outline: 'none',
-  width: '100%',
-}
+import { inputStyle } from '@/lib/styles'
 
 export default function NewDiscountPage() {
   const router = useRouter()
@@ -53,7 +40,7 @@ export default function NewDiscountPage() {
   }
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -72,7 +59,7 @@ export default function NewDiscountPage() {
           <button
             onClick={handleSubmit}
             disabled={loading || !name || !code || !value || !startDate || !endDate}
-            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-[10px] text-[13px] font-semibold rounded-[10px] transition-all hover:opacity-80 active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: '#7C9070', color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
           >
             {loading ? '建立中…' : '建立活動'}
@@ -87,19 +74,19 @@ export default function NewDiscountPage() {
         >
           <div className="flex flex-col gap-[6px]">
             <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>活動名稱</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="例：春季特惠" style={inputStyle} />
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="例：春季特惠" className="admin-input" style={inputStyle} />
           </div>
 
           <div className="flex flex-col gap-[6px]">
             <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>折扣碼</label>
-            <input type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="例：SPRING2026" style={inputStyle} />
+            <input type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="例：SPRING2026" className="admin-input" style={inputStyle} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>折扣類型</label>
               <div className="relative">
-                <select value={type} onChange={e => setType(e.target.value as 'percentage' | 'fixed')} className="appearance-none w-full outline-none" style={{ ...inputStyle, paddingRight: 32 }}>
+                <select value={type} onChange={e => setType(e.target.value as 'percentage' | 'fixed')} className="appearance-none w-full admin-input" style={{ ...inputStyle, paddingRight: 32 }}>
                   <option value="percentage">百分比折扣 (%)</option>
                   <option value="fixed">固定金額 (NT$)</option>
                 </select>
@@ -110,29 +97,29 @@ export default function NewDiscountPage() {
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>
                 折扣值 ({type === 'percentage' ? '%' : 'NT$'})
               </label>
-              <input type="number" value={value} onChange={e => setValue(e.target.value)} placeholder="0" style={inputStyle} />
+              <input type="number" value={value} onChange={e => setValue(e.target.value)} placeholder="0" className="admin-input" style={inputStyle} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>最低消費 (NT$)</label>
-              <input type="number" value={minAmount} onChange={e => setMinAmount(e.target.value)} placeholder="選填" style={inputStyle} />
+              <input type="number" value={minAmount} onChange={e => setMinAmount(e.target.value)} placeholder="選填" className="admin-input" style={inputStyle} />
             </div>
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>使用上限</label>
-              <input type="number" value={usageLimit} onChange={e => setUsageLimit(e.target.value)} placeholder="不限" style={inputStyle} />
+              <input type="number" value={usageLimit} onChange={e => setUsageLimit(e.target.value)} placeholder="不限" className="admin-input" style={inputStyle} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>開始日期</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} />
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="admin-input" style={inputStyle} />
             </div>
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold" style={{ fontFamily: 'var(--font-jakarta)', color: '#2D2D2D' }}>結束日期</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} />
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="admin-input" style={inputStyle} />
             </div>
           </div>
         </div>
@@ -140,3 +127,4 @@ export default function NewDiscountPage() {
     </div>
   )
 }
+

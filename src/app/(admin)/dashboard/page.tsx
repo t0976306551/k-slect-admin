@@ -1,38 +1,28 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { fetchDashboardStats, fetchOrders } from '@/lib/api'
+import { StatusBadge, ORDER_STATUS_MAP } from '@/components/admin/StatusBadge'
 
-function formatAmount(n: number) {
+const DASHBOARD_ORDER_STATUS_MAP = {
+  ...ORDER_STATUS_MAP,
+  pending_confirm: { label: '待確認', bg: '#5B9BD515', color: '#5B9BD5' },
+  pending_payment: { label: '待付款', bg: '#5B9BD515', color: '#5B9BD5' },
+  shipped: { label: '已出貨', bg: '#D4845E15', color: '#D4845E' },
+}
+
+function formatAmount(n: number): string {
   return `NT$ ${n.toLocaleString()}`
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; bg: string; color: string }> = {
-    pending_ship: { label: '待出貨', bg: '#7C907025', color: '#7C9070' },
-    shipped: { label: '已出貨', bg: '#D4845E15', color: '#D4845E' },
-    pending_confirm: { label: '待確認', bg: '#5B9BD515', color: '#5B9BD5' },
-    pending_payment: { label: '待付款', bg: '#5B9BD515', color: '#5B9BD5' },
-    completed: { label: '已完成', bg: '#F3E5F5', color: '#7B1FA2' },
-    cancelled: { label: '已取消', bg: '#F5F5F5', color: '#9E9E9E' },
+function PaymentBadge({ method, status }: { method: string; status: string }) {
+  if (method !== 'bank_transfer') {
+    return <span className="text-[12px]" style={{ color: '#5B9BD5' }}>取貨付款</span>
   }
-  const s = map[status] ?? { label: status, bg: '#F5F5F5', color: '#9E9E9E' }
+  const isPaid = status === 'paid'
   return (
-    <span
-      className="inline-flex items-center px-[8px] py-[3px] text-[10px] font-semibold rounded-[12px]"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {s.label}
+    <span className="text-[12px]" style={{ color: isPaid ? '#7C9070' : '#D4845E' }}>
+      {isPaid ? '已匯款' : '待匯款'}
     </span>
   )
-}
-
-function PaymentBadge({ method, status }: { method: string; status: string }) {
-  if (method === 'bank_transfer' && status === 'paid') {
-    return <span className="text-[12px]" style={{ color: '#7C9070' }}>已匯款</span>
-  }
-  if (method === 'bank_transfer' && status === 'pending') {
-    return <span className="text-[12px]" style={{ color: '#D4845E' }}>待匯款</span>
-  }
-  return <span className="text-[12px]" style={{ color: '#5B9BD5' }}>取貨付款</span>
 }
 
 export default async function DashboardPage() {
@@ -49,7 +39,7 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1
@@ -213,7 +203,7 @@ export default async function DashboardPage() {
                 <PaymentBadge method={order.paymentMethod} status={order.paymentStatus} />
               </span>
               <span className="flex-1">
-                <StatusBadge status={order.status} />
+                <StatusBadge status={order.status} map={DASHBOARD_ORDER_STATUS_MAP} sizeClass="text-[10px]" />
               </span>
             </div>
           ))}
@@ -222,3 +212,4 @@ export default async function DashboardPage() {
     </div>
   )
 }
+

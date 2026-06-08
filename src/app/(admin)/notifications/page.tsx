@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -47,11 +47,15 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
 
   useEffect(() => {
-    fetchNotifications().then(r => { if (r.data) setNotifications(r.data) })
+    async function load() {
+      const r = await fetchNotifications()
+      if (r.data) setNotifications(r.data)
+    }
+    load()
   }, [])
 
   return (
-    <div className="p-8 flex flex-col gap-6">
+    <div className="p-4 md:p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1
           className="text-[28px] font-medium tracking-[-0.5px]"
@@ -61,7 +65,7 @@ export default function NotificationsPage() {
         </h1>
         <button
           onClick={() => router.push('/notifications/new')}
-          className="flex items-center gap-[6px] px-5 py-[10px] transition-opacity hover:opacity-80"
+          className="flex items-center gap-[6px] px-5 py-[10px] transition-all hover:opacity-80 active:scale-[0.96]"
           style={{ background: '#7C9070', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: 'var(--font-jakarta)' }}
         >
           <Plus size={16} color="#FFFFFF" />
@@ -108,3 +112,4 @@ export default function NotificationsPage() {
     </div>
   )
 }
+

@@ -31,7 +31,7 @@ export function cartesianProduct(options: ProductOptionDraft[]): ProductVariantR
 /**
  * 自動產生 SKU，例："韓系帆布" + [卡其, S] → "KAF-卡其-S"
  */
-export function generateSku(productName: string, combo: ProductOptionValueDraft[]): string {
+function generateSku(productName: string, combo: ProductOptionValueDraft[]): string {
   const prefix = productName
     .trim()
     .split(/\s+/)
